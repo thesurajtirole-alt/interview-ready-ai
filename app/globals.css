@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Warm, calm neutral palette — no neon, no purple-gradient defaults */
+    --background: 40 33% 98%;
+    --foreground: 20 14% 12%;
+
+    --card: 40 33% 100%;
+    --card-foreground: 20 14% 12%;
+
+    --primary: 158 30% 28%;
+    --primary-foreground: 40 33% 98%;
+
+    --secondary: 30 20% 94%;
+    --secondary-foreground: 20 14% 12%;
+
+    --muted: 30 15% 92%;
+    --muted-foreground: 20 8% 40%;
+
+    --accent: 35 60% 55%;
+    --accent-foreground: 20 14% 12%;
+
+    --border: 30 15% 88%;
+    --input: 30 15% 88%;
+    --ring: 158 30% 28%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 20 20% 8%;
+    --foreground: 40 20% 96%;
+
+    --card: 20 18% 11%;
+    --card-foreground: 40 20% 96%;
+
+    --primary: 158 35% 55%;
+    --primary-foreground: 20 20% 8%;
+
+    --secondary: 20 14% 16%;
+    --secondary-foreground: 40 20% 96%;
+
+    --muted: 20 14% 16%;
+    --muted-foreground: 30 10% 65%;
+
+    --accent: 35 55% 60%;
+    --accent-foreground: 20 20% 8%;
+
+    --border: 20 14% 20%;
+    --input: 20 14% 20%;
+    --ring: 158 35% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
