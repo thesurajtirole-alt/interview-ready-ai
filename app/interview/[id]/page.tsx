@@ -29,14 +29,13 @@ export default async function InterviewPage({
           This interview is complete.
         </h1>
         <p className="mt-3 text-muted-foreground">
-          Your full report is built in a later phase — for now, nice work
-          finishing a full mock interview.
+          Nice work finishing a full mock interview.
         </p>
         <a
-          href="/dashboard"
+          href={`/interview/${params.id}/report`}
           className="mt-6 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
         >
-          Back to dashboard
+          See what we noticed
         </a>
       </main>
     );

@@ -148,14 +148,13 @@ export function InterviewChat({
         <h1 className="font-display text-2xl font-medium">You did it.</h1>
         <p className="mt-3 max-w-md text-muted-foreground">
           You just completed a realistic interview built around this role
-          and company. Your full report (strengths, growth areas, evidence)
-          is built in a later phase.
+          and company.
         </p>
         <button
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push(`/interview/${interviewId}/report`)}
           className="mt-6 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
         >
-          Back to dashboard
+          See what we noticed
         </button>
       </main>
     );
