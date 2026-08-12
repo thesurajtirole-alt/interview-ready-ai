@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const MODES = [
@@ -10,7 +10,7 @@ const MODES = [
   { value: "pressure", label: "Pressure", desc: "Brisk, tighter follow-ups. Never rude." },
 ];
 
-export default function NewInterviewPage() {
+function NewInterviewForm() {
   const router = useRouter();
   const params = useSearchParams();
   const jobDescriptionId = params.get("jobDescriptionId");
@@ -77,5 +77,13 @@ export default function NewInterviewPage() {
         {loading ? "Setting up your interview…" : "Begin"}
       </button>
     </main>
+  );
+}
+
+export default function NewInterviewPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewInterviewForm />
+    </Suspense>
   );
 }
