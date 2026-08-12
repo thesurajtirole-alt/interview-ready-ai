@@ -1,11 +1,22 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ResearchTrigger } from "./research-trigger";
+import { BlueprintTrigger } from "./blueprint-trigger";
 
 const CONFIDENCE_LABEL: Record<string, string> = {
   confirmed: "Confirmed",
   strong_indication: "Strong indication",
   possible: "Possible",
+};
+
+const STAGE_LABEL: Record<string, string> = {
+  opening: "Opening",
+  resume_deep_dive: "Resume deep dive",
+  technical: "Technical",
+  system_design: "System design",
+  behavioral: "Behavioral",
+  leadership: "Leadership",
+  candidate_questions: "Candidate questions",
 };
 
 export default async function ResearchPage({
@@ -44,6 +55,35 @@ export default async function ResearchPage({
         .eq("related_id", research.id)
         .order("created_at", { ascending: true })
     : { data: [] };
+
+  const { data: jd } = await supabase
+    .from("job_descriptions")
+    .select("*")
+    .eq("company_id", params.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { data: plan } = jd
+    ? await supabase
+        .from("interview_plans")
+        .select("*")
+        .eq("job_description_id", jd.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    : { data: null };
+
+  const blueprint = plan?.blueprint as
+    | {
+        competencies: { name: string; weight: number; category: string }[];
+        stages: { stage: string; percentage: number }[];
+        highPriorityAreas: string[];
+        potentialChallengeAreas: string[];
+        questionsToPrepare: string[];
+        questionsToAsk: string[];
+      }
+    | undefined;
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
@@ -105,6 +145,116 @@ export default async function ResearchPage({
           </section>
 
           <ResearchTrigger companyId={company.id} />
+
+          {/* ---------- Interview Blueprint ---------- */}
+          <section className="border-t border-border pt-8">
+            <h2 className="font-display text-xl font-medium">
+              Your interview blueprint
+            </h2>
+
+            {!jd && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Add a job description during onboarding to generate a
+                blueprint.
+              </p>
+            )}
+
+            {jd && !blueprint && (
+              <div className="mt-4">
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Combines your resume, this job description, and the
+                  research above into a personalized prep plan.
+                </p>
+                <BlueprintTrigger jobDescriptionId={jd.id} />
+              </div>
+            )}
+
+            {blueprint && (
+              <div className="mt-6 space-y-8">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Interview structure
+                  </h3>
+                  <div className="mt-3 space-y-2">
+                    {blueprint.stages.map((s) => (
+                      <div
+                        key={s.stage}
+                        className="flex items-center justify-between rounded-lg border border-border px-4 py-2.5 text-sm"
+                      >
+                        <span>{STAGE_LABEL[s.stage] ?? s.stage}</span>
+                        <span className="font-medium text-accent">
+                          {s.percentage}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Competency map
+                  </h3>
+                  <div className="mt-3 space-y-2">
+                    {blueprint.competencies.map((c) => (
+                      <div
+                        key={c.name}
+                        className="flex items-center justify-between rounded-lg border border-border px-4 py-2.5 text-sm"
+                      >
+                        <span>{c.name}</span>
+                        <span className="font-medium">{c.weight}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    High-priority preparation areas
+                  </h3>
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                    {blueprint.highPriorityAreas.map((a) => (
+                      <li key={a}>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Potential challenge areas
+                  </h3>
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                    {blueprint.potentialChallengeAreas.map((a) => (
+                      <li key={a}>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Questions to prepare
+                  </h3>
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                    {blueprint.questionsToPrepare.map((q) => (
+                      <li key={q}>{q}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Questions you could ask them
+                  </h3>
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                    {blueprint.questionsToAsk.map((q) => (
+                      <li key={q}>{q}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <BlueprintTrigger jobDescriptionId={jd!.id} />
+              </div>
+            )}
+          </section>
         </div>
       )}
     </main>
