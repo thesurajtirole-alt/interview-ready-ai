@@ -252,6 +252,21 @@ export default async function ResearchPage({
                 </div>
 
                 <BlueprintTrigger jobDescriptionId={jd!.id} />
+
+                <div className="border-t border-border pt-6">
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Ready to practice?
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Start a real mock interview built from this blueprint.
+                  </p>
+                  <a
+                    href={`/interview/new?jobDescriptionId=${jd!.id}`}
+                    className="mt-3 inline-block rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+                  >
+                    Start mock interview
+                  </a>
+                </div>
               </div>
             )}
           </section>

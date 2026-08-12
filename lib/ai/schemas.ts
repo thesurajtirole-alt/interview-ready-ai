@@ -29,3 +29,31 @@ export const InterviewBlueprintSchema = z.object({
 });
 
 export type InterviewBlueprint = z.infer<typeof InterviewBlueprintSchema>;
+
+export const NextQuestionSchema = z.object({
+  actionType: z.enum([
+    "follow_up",
+    "clarify",
+    "challenge",
+    "request_example",
+    "request_metric",
+    "request_tradeoff",
+    "increase_difficulty",
+    "change_topic",
+    "move_to_next_competency",
+  ]),
+  questionText: z.string().min(1),
+});
+export type NextQuestion = z.infer<typeof NextQuestionSchema>;
+
+export const AnswerAnalysisSchema = z.object({
+  relevance: z.number().min(0).max(100),
+  accuracy: z.number().min(0).max(100),
+  structure: z.number().min(0).max(100),
+  specificity: z.number().min(0).max(100),
+  evidence: z.array(z.string()),
+  strengths: z.array(z.string()),
+  growthAreas: z.array(z.string()),
+  recommendation: z.string(),
+});
+export type AnswerAnalysis = z.infer<typeof AnswerAnalysisSchema>;
