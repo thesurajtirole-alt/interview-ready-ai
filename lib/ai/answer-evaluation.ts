@@ -1,3 +1,4 @@
+import { parseModelJson } from "./parse-json";
 import { geminiGenerateJSON } from "./gemini";
 import { AnswerAnalysisSchema, type AnswerAnalysis } from "./schemas";
 
@@ -19,15 +20,7 @@ CANDIDATE'S ANSWER: ${input.answer}
 Return ONLY JSON matching: {"relevance": number, "accuracy": number, "structure": number, "specificity": number, "evidence": [string, ...], "strengths": [string, ...], "growthAreas": [string, ...], "recommendation": string}`;
 
   const raw = await geminiGenerateJSON(prompt);
-  const parsed = JSON.parse(stripFence(raw));
+  const parsed = parseModelJson(raw);
   return AnswerAnalysisSchema.parse(parsed);
 }
 
-function stripFence(raw: string): string {
-  try {
-    JSON.parse(raw);
-    return raw;
-  } catch {
-    return raw.replace(/^```json\s*|```\s*$/g, "").trim();
-  }
-}

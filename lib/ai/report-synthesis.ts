@@ -1,3 +1,4 @@
+import { parseModelJson } from "./parse-json";
 import { geminiGenerateJSON } from "./gemini";
 import { z } from "zod";
 
@@ -51,15 +52,7 @@ Group the raw notes above into 2-4 clear STRENGTHS (a short title + a sentence e
 Return ONLY JSON matching: {"strengths": [{"title": string, "description": string}], "growthAreas": [{"title": string, "description": string, "recommendation": string}], "summary": string}`;
 
   const raw = await geminiGenerateJSON(prompt);
-  const parsed = JSON.parse(stripFence(raw));
+  const parsed = parseModelJson(raw);
   return ReportNarrativeSchema.parse(parsed);
 }
 
-function stripFence(raw: string): string {
-  try {
-    JSON.parse(raw);
-    return raw;
-  } catch {
-    return raw.replace(/^```json\s*|```\s*$/g, "").trim();
-  }
-}

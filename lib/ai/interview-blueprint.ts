@@ -1,4 +1,5 @@
 import { geminiGenerateJSON } from "./gemini";
+import { parseModelJson } from "./parse-json";
 import { InterviewBlueprintSchema, type InterviewBlueprint } from "./schemas";
 
 interface BlueprintInput {
@@ -42,7 +43,7 @@ Return ONLY valid JSON matching this exact shape, nothing else:
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(raw);
+    parsed = parseModelJson(raw);
   } catch {
     throw new Error("AI response wasn't valid JSON. Try again.");
   }

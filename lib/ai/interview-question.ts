@@ -1,3 +1,4 @@
+import { parseModelJson } from "./parse-json";
 import { geminiGenerateJSON } from "./gemini";
 import { NextQuestionSchema, type NextQuestion } from "./schemas";
 
@@ -52,15 +53,7 @@ Rules (do not break these):
 Return ONLY JSON matching: {"actionType": "follow_up"|"clarify"|"challenge"|"request_example"|"request_metric"|"request_tradeoff"|"increase_difficulty"|"change_topic"|"move_to_next_competency", "questionText": string}`;
 
   const raw = await geminiGenerateJSON(prompt);
-  const parsed = JSON.parse(stripFence(raw));
+  const parsed = parseModelJson(raw);
   return NextQuestionSchema.parse(parsed);
 }
 
-function stripFence(raw: string): string {
-  try {
-    JSON.parse(raw);
-    return raw;
-  } catch {
-    return raw.replace(/^```json\s*|```\s*$/g, "").trim();
-  }
-}

@@ -1,3 +1,4 @@
+import { parseModelJson } from "./parse-json";
 import { geminiGenerateJSON } from "./gemini";
 import { z } from "zod";
 
@@ -36,7 +37,7 @@ Design 3-4 short, concrete drills that directly train this one skill. Good patte
 Return ONLY JSON matching: {"planTitle": string, "exercises": [{"title": string, "instructions": string}]} — 3 to 4 exercises.`;
 
   const raw = await geminiGenerateJSON(prompt);
-  const parsed = JSON.parse(stripFence(raw));
+  const parsed = parseModelJson(raw);
   return TrainingPlanSchema.parse(parsed);
 }
 
@@ -67,15 +68,7 @@ Score how well this attempt followed the drill's specific instructions (0-100) a
 Return ONLY JSON matching: {"score": number, "feedback": string}`;
 
   const raw = await geminiGenerateJSON(prompt);
-  const parsed = JSON.parse(stripFence(raw));
+  const parsed = parseModelJson(raw);
   return AttemptFeedbackSchema.parse(parsed);
 }
 
-function stripFence(raw: string): string {
-  try {
-    JSON.parse(raw);
-    return raw;
-  } catch {
-    return raw.replace(/^```json\s*|```\s*$/g, "").trim();
-  }
-}
