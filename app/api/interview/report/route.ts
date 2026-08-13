@@ -96,12 +96,48 @@ export async function POST(request: Request) {
       allRecommendations,
     });
 
+    // Persist growth areas as their own rows for later cross-interview
+    // tracking (spec section 34) — and attach each real id back onto the
+    // narrative so the report page can link straight into training.
+    const growthAreasWithIds = await Promise.all(
+      narrative.growthAreas.map(async (g) => {
+        const { data: existingArea } = await supabase
+          .from("growth_areas")
+          .select("id")
+          .eq("name", g.title)
+          .maybeSingle();
+
+        const areaId =
+          existingArea?.id ??
+          (
+            await supabase
+              .from("growth_areas")
+              .insert({ name: g.title, description: g.description })
+              .select()
+              .single()
+          ).data?.id;
+
+        if (areaId) {
+          await supabase.from("candidate_growth_areas").upsert(
+            {
+              user_id: user.id,
+              growth_area_id: areaId,
+              last_observed_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id,growth_area_id" }
+          );
+        }
+
+        return { ...g, growthAreaId: areaId ?? null };
+      })
+    );
+
     const { data: report, error: reportErr } = await supabase
       .from("interview_reports")
       .insert({
         interview_id: interviewId,
         strengths: narrative.strengths,
-        growth_areas: narrative.growthAreas,
+        growth_areas: growthAreasWithIds,
         interview_dna: interviewDna,
         summary: narrative.summary,
       })
@@ -109,43 +145,12 @@ export async function POST(request: Request) {
       .single();
     if (reportErr) throw reportErr;
 
-    // Also persist growth areas as their own rows for later cross-interview
-    // tracking (spec section 34) — best-effort, not blocking.
-    for (const g of narrative.growthAreas) {
-      const { data: existingArea } = await supabase
-        .from("growth_areas")
-        .select("id")
-        .eq("name", g.title)
-        .maybeSingle();
-
-      const areaId =
-        existingArea?.id ??
-        (
-          await supabase
-            .from("growth_areas")
-            .insert({ name: g.title, description: g.description })
-            .select()
-            .single()
-        ).data?.id;
-
-      if (areaId) {
-        await supabase.from("candidate_growth_areas").upsert(
-          {
-            user_id: user.id,
-            growth_area_id: areaId,
-            last_observed_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id,growth_area_id" }
-        );
-      }
-    }
-
     return NextResponse.json({
       ok: true,
       reportId: report.id,
       report: {
         strengths: narrative.strengths,
-        growthAreas: narrative.growthAreas,
+        growthAreas: growthAreasWithIds,
         summary: narrative.summary,
         interviewDna,
       },

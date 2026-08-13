@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ReportTrigger } from "./report-trigger";
+import { TrainingTrigger } from "@/app/training/training-trigger";
 
 const DNA_LABEL: Record<string, string> = {
   relevance: "Relevance",
@@ -48,6 +49,7 @@ export default async function ReportPage({
     title: string;
     description: string;
     recommendation: string;
+    growthAreaId: string | null;
   }[];
   const dna = (report?.interview_dna ?? {}) as Record<string, number>;
 
@@ -109,6 +111,11 @@ export default async function ReportPage({
                     <span className="font-medium">Try this: </span>
                     {g.recommendation}
                   </p>
+                  {g.growthAreaId && (
+                    <div className="mt-3">
+                      <TrainingTrigger growthAreaId={g.growthAreaId} />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
