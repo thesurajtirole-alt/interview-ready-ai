@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ResearchTrigger } from "./research-trigger";
 import { BlueprintTrigger } from "./blueprint-trigger";
+import { InterviewerResearchTrigger } from "./interviewer-trigger";
 
 const CONFIDENCE_LABEL: Record<string, string> = {
   confirmed: "Confirmed",
@@ -85,6 +86,13 @@ export default async function ResearchPage({
       }
     | undefined;
 
+  const { data: interviewers } = await supabase
+    .from("interviewers")
+    .select("*, interviewer_research(*)")
+    .eq("company_id", params.id)
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: true });
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <p className="text-sm text-muted-foreground">Interview brief</p>
@@ -145,6 +153,77 @@ export default async function ResearchPage({
           </section>
 
           <ResearchTrigger companyId={company.id} />
+
+          {interviewers && interviewers.length > 0 && (
+            <section className="border-t border-border pt-8">
+              <h2 className="font-display text-xl font-medium">
+                Your panel
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Based only on public professional information. Never a
+                guess at what someone privately thinks.
+              </p>
+              <div className="mt-4 space-y-4">
+                {interviewers.map((iv: any) => {
+                  const research = iv.interviewer_research?.[0];
+                  return (
+                    <div
+                      key={iv.id}
+                      className="rounded-lg border border-border p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium">{iv.name}</p>
+                          {iv.role_title && (
+                            <p className="text-xs text-muted-foreground">
+                              {iv.role_title}
+                            </p>
+                          )}
+                        </div>
+                        <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+                          {research
+                            ? research.confidence === "strong_indication"
+                              ? "Strong indication"
+                              : research.confidence === "confirmed"
+                              ? "Confirmed"
+                              : "Possible"
+                            : "Not researched yet"}
+                        </span>
+                      </div>
+
+                      {research ? (
+                        <div className="mt-3 space-y-2 text-sm">
+                          {research.summary && (
+                            <p className="text-muted-foreground">
+                              {research.summary}
+                            </p>
+                          )}
+                          {research.expertise?.length > 0 && (
+                            <p>
+                              <span className="font-medium">
+                                Publicly listed expertise:{" "}
+                              </span>
+                              <span className="text-muted-foreground">
+                                {research.expertise.join(", ")}
+                              </span>
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            Likely professional focus:{" "}
+                            {research.focus_areas?.join(", ") || "unclear from public info"}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="mt-3">
+                          <InterviewerResearchTrigger interviewerId={iv.id} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* ---------- Interview Blueprint ---------- */}
           <section className="border-t border-border pt-8">

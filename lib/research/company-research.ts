@@ -56,6 +56,57 @@ export async function researchCompany(
   };
 }
 
+export interface InterviewerResearchResult {
+  careerHistory: ResearchFinding[];
+  expertise: string[];
+  focusAreas: string[];
+  confidence: "confirmed" | "strong_indication" | "possible";
+}
+
+/**
+ * Researches a named panel member using only their public professional
+ * information (spec section 8) — never private/personal data. Confidence
+ * is deliberately conservative: LinkedIn-sourced hits are the strongest
+ * signal we have without a paid people-data API.
+ */
+export async function researchInterviewer(
+  name: string,
+  companyName: string,
+  linkedinUrl?: string | null
+): Promise<InterviewerResearchResult> {
+  const query = linkedinUrl
+    ? `${name} ${companyName} ${linkedinUrl}`
+    : `${name} ${companyName} LinkedIn professional background`;
+
+  const results = await tavilySearch(query, 5);
+  const findings = toFindings(results, "interviewer_research");
+
+  // Pull out expertise-sounding keywords from the snippets themselves —
+  // no invented skills, only what's actually in the retrieved text.
+  const combinedText = findings.map((f) => f.summary).join(" ").toLowerCase();
+  const skillCandidates = [
+    "aws", "azure", "gcp", "kubernetes", "docker", "react", "node.js",
+    "python", "java", "javascript", "typescript", "c#", "sql",
+    "distributed systems", "system design", "microservices", "cloud",
+    "healthcare technology", "fintech", "e-commerce", "sales",
+    "business development", "marketing", "product management",
+    "project management", "engineering leadership", "architecture",
+    "solution architect", "data science", "machine learning", "ai", "ml",
+    "devops", "cybersecurity", "crm", "erp", "dynamics 365", "salesforce",
+    "sap", "consulting", "strategy", "operations", "finance",
+  ];
+  const expertise = skillCandidates.filter((s) => combinedText.includes(s));
+
+  return {
+    careerHistory: findings,
+    expertise,
+    focusAreas: expertise.slice(0, 4),
+    confidence: findings.some((f) => f.confidence === "strong_indication")
+      ? "strong_indication"
+      : "possible",
+  };
+}
+
 export interface RoleResearchResult {
   competencySignals: ResearchFinding[];
 }

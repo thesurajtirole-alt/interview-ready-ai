@@ -44,6 +44,18 @@ export default async function DashboardPage() {
               </a>
             ))}
           </div>
+          <a
+            href="/training"
+            className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
+          >
+            Go to training →
+          </a>
+          <a
+            href="/progress"
+            className="mt-4 ml-4 inline-block text-sm font-medium text-primary hover:underline"
+          >
+            Am I ready? →
+          </a>
         </div>
       ) : (
         <a
