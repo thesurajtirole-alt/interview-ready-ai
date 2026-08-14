@@ -416,9 +416,17 @@ export default function OnboardingPage() {
                 <input
                   type="file"
                   accept=".pdf,.docx,.txt"
-                  onChange={(e) =>
-                    setResumeFile(e.target.files?.[0] ?? null)
-                  }
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] ?? null;
+                    if (file && file.size > 10 * 1024 * 1024) {
+                      setError("That file is over 10MB — try a smaller one.");
+                      setResumeFile(null);
+                      e.target.value = "";
+                      return;
+                    }
+                    setError(null);
+                    setResumeFile(file);
+                  }}
                   className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-lg file:border-0 file:bg-secondary file:px-4 file:py-2 file:text-sm file:font-medium"
                 />
                 {resumeFile && (

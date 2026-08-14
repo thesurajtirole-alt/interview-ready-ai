@@ -80,10 +80,27 @@ export async function POST(request: Request) {
     .limit(1)
     .maybeSingle();
 
-  // Resume summary: for now, a lightweight placeholder built from what
-  // we actually have (real resume parsing lands in a later phase).
+  // Resume summary: real extracted experience/skills/projects, now that
+  // resume analysis actually exists.
   const resumeSummary = candidateProfile
-    ? JSON.stringify(candidateProfile.skills ?? [])
+    ? [
+        candidateProfile.experience?.length > 0
+          ? `Experience: ${candidateProfile.experience
+              .map((e: any) => `${e.title} at ${e.company} (${e.duration})`)
+              .join("; ")}`
+          : "",
+        candidateProfile.skills?.length > 0
+          ? `Skills: ${candidateProfile.skills.join(", ")}`
+          : "",
+        candidateProfile.projects?.length > 0
+          ? `Projects: ${candidateProfile.projects.join("; ")}`
+          : "",
+        candidateProfile.achievements?.length > 0
+          ? `Achievements: ${candidateProfile.achievements.join("; ")}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n")
     : "(no resume on file yet)";
 
   const validMode = ["friendly", "professional", "challenging", "pressure"].includes(

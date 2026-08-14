@@ -56,6 +56,12 @@ export default async function DashboardPage() {
           >
             Am I ready? →
           </a>
+          <a
+            href="/profile"
+            className="mt-4 ml-4 inline-block text-sm font-medium text-primary hover:underline"
+          >
+            Your resume →
+          </a>
         </div>
       ) : (
         <a
