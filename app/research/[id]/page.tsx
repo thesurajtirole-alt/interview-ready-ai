@@ -192,11 +192,29 @@ export default async function ResearchPage({
                       </div>
 
                       {research ? (
-                        <div className="mt-3 space-y-2 text-sm">
+                        <div className="mt-3 space-y-3 text-sm">
                           {research.summary && (
                             <p className="text-muted-foreground">
                               {research.summary}
                             </p>
+                          )}
+                          {research.years_experience && (
+                            <p>
+                              <span className="font-medium">Experience: </span>
+                              <span className="text-muted-foreground">
+                                {research.years_experience} (as publicly stated)
+                              </span>
+                            </p>
+                          )}
+                          {research.company_description && (
+                            <div className="rounded-lg bg-secondary/60 p-3">
+                              <p className="text-xs font-medium text-accent">
+                                What {company.name} says about them
+                              </p>
+                              <p className="mt-1 text-muted-foreground">
+                                {research.company_description.summary}
+                              </p>
+                            </div>
                           )}
                           {research.expertise?.length > 0 && (
                             <p>
@@ -208,10 +226,44 @@ export default async function ResearchPage({
                               </span>
                             </p>
                           )}
+                          {research.public_statements?.length > 0 && (
+                            <div>
+                              <p className="text-xs font-medium text-accent">
+                                Publicly stated approach
+                              </p>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                What they&apos;ve said publicly — not a guess
+                                at what they privately think.
+                              </p>
+                              <div className="mt-2 space-y-2">
+                                {research.public_statements.map(
+                                  (s: any, idx: number) => (
+                                    <a
+                                      key={idx}
+                                      href={s.sourceUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block rounded-lg border border-border p-2.5 text-xs transition hover:bg-secondary"
+                                    >
+                                      <p className="text-muted-foreground">
+                                        {s.summary}
+                                      </p>
+                                      <p className="mt-1 truncate text-[10px] text-muted-foreground/70">
+                                        {s.sourceUrl}
+                                      </p>
+                                    </a>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
                           <p className="text-xs text-muted-foreground">
                             Likely professional focus:{" "}
                             {research.focus_areas?.join(", ") || "unclear from public info"}
                           </p>
+                          <div className="pt-1">
+                            <InterviewerResearchTrigger interviewerId={iv.id} />
+                          </div>
                         </div>
                       ) : (
                         <div className="mt-3">

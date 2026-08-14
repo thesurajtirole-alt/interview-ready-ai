@@ -60,30 +60,65 @@ export interface InterviewerResearchResult {
   careerHistory: ResearchFinding[];
   expertise: string[];
   focusAreas: string[];
+  yearsOfExperience: string | null; // only if explicitly stated somewhere, never estimated
+  companyDescription: ResearchFinding | null; // what the company's own site says about them
+  publicStatements: ResearchFinding[]; // their own quotes/talks/articles, sourced
   confidence: "confirmed" | "strong_indication" | "possible";
 }
 
+const EXPERIENCE_PATTERN = /(\d{1,2})\+?\s*(?:years|yrs)(?:\s+of)?\s+experience/i;
+
 /**
  * Researches a named panel member using only their public professional
- * information (spec section 8) — never private/personal data. Confidence
- * is deliberately conservative: LinkedIn-sourced hits are the strongest
- * signal we have without a paid people-data API.
+ * information (spec section 3 and 8) — never private data, never
+ * invented psychology. "Publicly stated approach" surfaces what they've
+ * actually said, not a guess at how they think.
  */
 export async function researchInterviewer(
   name: string,
   companyName: string,
-  linkedinUrl?: string | null
+  linkedinUrl?: string | null,
+  companyWebsite?: string | null
 ): Promise<InterviewerResearchResult> {
-  const query = linkedinUrl
-    ? `${name} ${companyName} ${linkedinUrl}`
-    : `${name} ${companyName} LinkedIn professional background`;
+  const [profileResults, companySiteResults, quoteResults] = await Promise.all([
+    tavilySearch(
+      linkedinUrl
+        ? `${name} ${companyName} ${linkedinUrl}`
+        : `${name} ${companyName} LinkedIn professional background`,
+      5
+    ),
+    tavilySearch(
+      companyWebsite
+        ? `${name} ${companyName} team ${companyWebsite}`
+        : `"${name}" ${companyName} team about us`,
+      3
+    ),
+    // Tied to the company name specifically — searching on name alone
+    // risks matching a completely different person who shares the name.
+    tavilySearch(`"${name}" ${companyName} quote OR interview OR article`, 4),
+  ]);
 
-  const results = await tavilySearch(query, 5);
-  const findings = toFindings(results, "interviewer_research");
+  const careerHistory = toFindings(profileResults, "interviewer_research");
+  const companySiteFindings = toFindings(companySiteResults, "company_page_mention");
 
-  // Pull out expertise-sounding keywords from the snippets themselves —
-  // no invented skills, only what's actually in the retrieved text.
-  const combinedText = findings.map((f) => f.summary).join(" ").toLowerCase();
+  // Extra safety filter: even with a company-scoped query, only keep a
+  // "public statement" if the company name (or its first word, for
+  // multi-word names) actually appears in the retrieved text — otherwise
+  // we risk attributing a different person's words to this interviewer.
+  const companyKeyword = companyName.split(" ")[0]?.toLowerCase();
+  const publicStatements = toFindings(quoteResults, "public_statement").filter(
+    (f) =>
+      !companyKeyword ||
+      f.summary.toLowerCase().includes(companyKeyword) ||
+      f.sourceTitle.toLowerCase().includes(companyKeyword)
+  );
+
+  const combinedText = careerHistory.map((f) => f.summary).join(" ").toLowerCase();
+
+  // Real extraction only — never estimate a number that isn't there.
+  const expMatch = combinedText.match(EXPERIENCE_PATTERN);
+  const yearsOfExperience = expMatch ? `${expMatch[1]}+ years` : null;
+
   const skillCandidates = [
     "aws", "azure", "gcp", "kubernetes", "docker", "react", "node.js",
     "python", "java", "javascript", "typescript", "c#", "sql",
@@ -97,11 +132,32 @@ export async function researchInterviewer(
   ];
   const expertise = skillCandidates.filter((s) => combinedText.includes(s));
 
+  // Only treat a company-site result as a real "company description" if
+  // it actually appears to be from that company's own domain. Guard
+  // against malformed/missing website values rather than throwing.
+  function safeHostname(url: string): string | null {
+    try {
+      const withProtocol = url.startsWith("http") ? url : `https://${url}`;
+      return new URL(withProtocol).hostname.replace("www.", "");
+    } catch {
+      return null;
+    }
+  }
+
+  const companyHostname = companyWebsite ? safeHostname(companyWebsite) : null;
+  const companyDescription =
+    companySiteFindings.find((f) =>
+      companyHostname ? f.sourceUrl.includes(companyHostname) : true
+    ) ?? null;
+
   return {
-    careerHistory: findings,
+    careerHistory,
     expertise,
     focusAreas: expertise.slice(0, 4),
-    confidence: findings.some((f) => f.confidence === "strong_indication")
+    yearsOfExperience,
+    companyDescription,
+    publicStatements,
+    confidence: careerHistory.some((f) => f.confidence === "strong_indication")
       ? "strong_indication"
       : "possible",
   };

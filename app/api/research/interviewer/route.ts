@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   const { data: interviewer, error: intErr } = await supabase
     .from("interviewers")
-    .select("*, companies(name)")
+    .select("*, companies(name, website)")
     .eq("id", interviewerId)
     .single();
   if (intErr || !interviewer) {
@@ -33,7 +33,8 @@ export async function POST(request: Request) {
     const result = await researchInterviewer(
       interviewer.name,
       interviewer.companies?.name ?? "",
-      interviewer.linkedin_url
+      interviewer.linkedin_url,
+      interviewer.companies?.website
     );
 
     if (result.careerHistory.length === 0) {
@@ -52,12 +53,21 @@ export async function POST(request: Request) {
         focus_areas: result.focusAreas,
         confidence: result.confidence,
         summary: result.careerHistory[0]?.summary ?? null,
+        years_experience: result.yearsOfExperience,
+        company_description: result.companyDescription,
+        public_statements: result.publicStatements,
       })
       .select()
       .single();
     if (researchErr) throw researchErr;
 
-    const sourceRows = result.careerHistory.map((f) => ({
+    const allSourcedFindings = [
+      ...result.careerHistory,
+      ...(result.companyDescription ? [result.companyDescription] : []),
+      ...result.publicStatements,
+    ];
+
+    const sourceRows = allSourcedFindings.map((f) => ({
       user_id: user.id,
       related_table: "interviewer_research",
       related_id: researchRow.id,
