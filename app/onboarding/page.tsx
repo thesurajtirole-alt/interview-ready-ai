@@ -156,7 +156,9 @@ export default function OnboardingPage() {
         if (participantErr) throw participantErr;
       }
 
-      // 5. Resume upload (optional)
+      // 5. Resume upload (optional) — automatically analyzed too, so the
+      // blueprint and interview have real resume data without the
+      // candidate needing a separate manual step.
       if (resumeFile) {
         const path = `${user.id}/${Date.now()}-${resumeFile.name}`;
         const { error: uploadErr } = await supabase.storage
@@ -164,15 +166,29 @@ export default function OnboardingPage() {
           .upload(path, resumeFile);
         if (uploadErr) throw uploadErr;
 
-        const { error: resumeRowErr } = await supabase
+        const { data: resumeRow, error: resumeRowErr } = await supabase
           .from("resumes")
           .insert({
             user_id: user.id,
             storage_path: path,
             file_name: resumeFile.name,
             file_type: resumeFile.type || "application/octet-stream",
-          });
+          })
+          .select()
+          .single();
         if (resumeRowErr) throw resumeRowErr;
+
+        // Best-effort: if analysis fails (e.g. a scanned/image-only PDF),
+        // don't block onboarding — the candidate can retry from /profile.
+        try {
+          await fetch("/api/resume/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ resumeId: resumeRow.id }),
+          });
+        } catch {
+          // Silently continue — analysis can be retried later.
+        }
       }
 
       // 6. Confidence check -> profile

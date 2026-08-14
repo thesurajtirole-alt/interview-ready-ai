@@ -14,7 +14,8 @@ export default async function ProfilePage() {
     .from("resumes")
     .select("*, candidate_profiles(*)")
     .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(1);
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
