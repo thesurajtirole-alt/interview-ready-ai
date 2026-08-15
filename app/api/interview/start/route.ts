@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateNextQuestion } from "@/lib/ai/interview-question";
 import { buildStagePlan } from "@/lib/interview/stage-plan";
+import {
+  pickInterviewerForStage,
+  PERSONA_LABEL,
+  type PanelMemberOption,
+} from "@/lib/interview/panel-persona";
 
 const STAGE_LABEL: Record<string, string> = {
   opening: "opening",
@@ -80,6 +85,29 @@ export async function POST(request: Request) {
     .limit(1)
     .maybeSingle();
 
+  // Real panel members, if the candidate added any during onboarding.
+  const { data: panelRecord } = await supabase
+    .from("interview_panels")
+    .select("id")
+    .eq("job_description_id", jobDescriptionId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { data: participants } = panelRecord
+    ? await supabase
+        .from("interview_participants")
+        .select("panel_persona, interviewers(name)")
+        .eq("panel_id", panelRecord.id)
+    : { data: [] };
+
+  const panelMembers: PanelMemberOption[] = (participants ?? [])
+    .filter((p: any) => p.interviewers?.name)
+    .map((p: any) => ({
+      name: p.interviewers.name,
+      persona: p.panel_persona ?? "other",
+    }));
+
   // Resume summary: real extracted experience/skills/projects, now that
   // resume analysis actually exists.
   const resumeSummary = candidateProfile
@@ -122,6 +150,7 @@ export async function POST(request: Request) {
   if (interviewErr) throw interviewErr;
 
   const firstStage = stagePlan[0].stage;
+  const openingInterviewer = pickInterviewerForStage(panelMembers, firstStage);
 
   try {
     const nextQ = await generateNextQuestion({
@@ -133,6 +162,11 @@ export async function POST(request: Request) {
       transcriptSoFar: "",
       lastAnswer: null,
       mode: validMode,
+      currentInterviewerName: openingInterviewer?.name ?? null,
+      currentInterviewerPersona: openingInterviewer
+        ? PERSONA_LABEL[openingInterviewer.persona]
+        : null,
+      isPersonaChange: !!openingInterviewer, // first question always "introduces" if a real panel exists
     });
 
     const { data: question, error: qErr } = await supabase
@@ -142,6 +176,8 @@ export async function POST(request: Request) {
         stage: firstStage,
         question_text: nextQ.questionText,
         action_type: nextQ.actionType,
+        interviewer_name: openingInterviewer?.name ?? null,
+        panel_persona: openingInterviewer?.persona ?? null,
       })
       .select()
       .single();
@@ -155,7 +191,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       interviewId: interview.id,
-      question: { id: question.id, text: nextQ.questionText, stage: firstStage },
+      question: {
+        id: question.id,
+        text: nextQ.questionText,
+        stage: firstStage,
+        interviewerName: openingInterviewer?.name ?? null,
+        panelPersona: openingInterviewer ? PERSONA_LABEL[openingInterviewer.persona] : null,
+      },
     });
   } catch (e: any) {
     return NextResponse.json(

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { inferPanelPersona } from "@/lib/interview/panel-persona";
 
 type PanelKnowledge = "full" | "partial" | "unknown";
 type Confidence =
@@ -152,6 +153,7 @@ export default function OnboardingPage() {
           .insert({
             panel_id: panel.id,
             interviewer_id: interviewer.id,
+            panel_persona: inferPanelPersona(member.role),
           });
         if (participantErr) throw participantErr;
       }

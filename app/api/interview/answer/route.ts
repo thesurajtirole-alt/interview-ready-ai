@@ -3,6 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { generateNextQuestion } from "@/lib/ai/interview-question";
 import { evaluateAnswer } from "@/lib/ai/answer-evaluation";
 import { buildStagePlan, currentStage } from "@/lib/interview/stage-plan";
+import {
+  pickInterviewerForStage,
+  PERSONA_LABEL,
+  type PanelMemberOption,
+} from "@/lib/interview/panel-persona";
 
 const STAGE_LABEL: Record<string, string> = {
   opening: "opening",
@@ -126,6 +131,44 @@ export async function POST(request: Request) {
 
   const jd = interview.interview_plans.job_descriptions;
 
+  // Real panel members, if any were added during onboarding.
+  const { data: panelRecord } = await supabase
+    .from("interview_panels")
+    .select("id")
+    .eq("job_description_id", jd.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { data: participants } = panelRecord
+    ? await supabase
+        .from("interview_participants")
+        .select("panel_persona, interviewers(name)")
+        .eq("panel_id", panelRecord.id)
+    : { data: [] };
+
+  const panelMembers: PanelMemberOption[] = (participants ?? [])
+    .filter((p: any) => p.interviewers?.name)
+    .map((p: any) => ({
+      name: p.interviewers.name,
+      persona: p.panel_persona ?? "other",
+    }));
+
+  const nextInterviewer = pickInterviewerForStage(panelMembers, nextStage);
+
+  // Was the previous question asked by a different panel member? If so,
+  // this question should include a natural handoff introduction.
+  const { data: lastQuestion } = await supabase
+    .from("interview_questions")
+    .select("interviewer_name")
+    .eq("interview_id", interviewId)
+    .order("asked_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const isPersonaChange =
+    !!nextInterviewer && nextInterviewer.name !== lastQuestion?.interviewer_name;
+
   try {
     const nextQ = await generateNextQuestion({
       companyName: jd.companies?.name ?? "the company",
@@ -136,6 +179,11 @@ export async function POST(request: Request) {
       transcriptSoFar: transcriptText,
       lastAnswer: answerText,
       mode: interview.mode,
+      currentInterviewerName: nextInterviewer?.name ?? null,
+      currentInterviewerPersona: nextInterviewer
+        ? PERSONA_LABEL[nextInterviewer.persona]
+        : null,
+      isPersonaChange,
     });
 
     const { data: newQuestion, error: qErr } = await supabase
@@ -145,6 +193,8 @@ export async function POST(request: Request) {
         stage: nextStage,
         question_text: nextQ.questionText,
         action_type: nextQ.actionType,
+        interviewer_name: nextInterviewer?.name ?? null,
+        panel_persona: nextInterviewer?.persona ?? null,
       })
       .select()
       .single();
@@ -162,6 +212,8 @@ export async function POST(request: Request) {
         id: newQuestion.id,
         text: nextQ.questionText,
         stage: nextStage,
+        interviewerName: nextInterviewer?.name ?? null,
+        panelPersona: nextInterviewer ? PERSONA_LABEL[nextInterviewer.persona] : null,
       },
     });
   } catch (e: any) {

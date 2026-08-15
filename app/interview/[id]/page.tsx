@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { InterviewChat } from "./interview-chat";
+import { PERSONA_LABEL, type PanelPersona } from "@/lib/interview/panel-persona";
 
 export default async function InterviewPage({
   params,
@@ -59,7 +60,14 @@ export default async function InterviewPage({
       roleTitle={role ?? "this role"}
       initialQuestion={
         lastQuestion
-          ? { id: lastQuestion.id, text: lastQuestion.question_text }
+          ? {
+              id: lastQuestion.id,
+              text: lastQuestion.question_text,
+              interviewerName: lastQuestion.interviewer_name,
+              panelPersona: lastQuestion.panel_persona
+                ? PERSONA_LABEL[lastQuestion.panel_persona as PanelPersona]
+                : null,
+            }
           : null
       }
     />

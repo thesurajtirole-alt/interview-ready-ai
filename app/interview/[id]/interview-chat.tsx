@@ -6,11 +6,15 @@ import { useRouter } from "next/navigation";
 interface Question {
   id: string;
   text: string;
+  interviewerName?: string | null;
+  panelPersona?: string | null;
 }
 
 interface TranscriptEntry {
   speaker: "interviewer" | "candidate";
   text: string;
+  interviewerName?: string | null;
+  panelPersona?: string | null;
 }
 
 export function InterviewChat({
@@ -28,7 +32,16 @@ export function InterviewChat({
   const [question, setQuestion] = useState<Question | null>(initialQuestion);
   const [answer, setAnswer] = useState("");
   const [transcript, setTranscript] = useState<TranscriptEntry[]>(
-    initialQuestion ? [{ speaker: "interviewer", text: initialQuestion.text }] : []
+    initialQuestion
+      ? [
+          {
+            speaker: "interviewer",
+            text: initialQuestion.text,
+            interviewerName: initialQuestion.interviewerName,
+            panelPersona: initialQuestion.panelPersona,
+          },
+        ]
+      : []
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -129,10 +142,20 @@ export function InterviewChat({
         setComplete(true);
         setQuestion(null);
       } else {
-        setQuestion({ id: data.question.id, text: data.question.text });
+        setQuestion({
+          id: data.question.id,
+          text: data.question.text,
+          interviewerName: data.question.interviewerName,
+          panelPersona: data.question.panelPersona,
+        });
         setTranscript((prev) => [
           ...prev,
-          { speaker: "interviewer", text: data.question.text },
+          {
+            speaker: "interviewer",
+            text: data.question.text,
+            interviewerName: data.question.interviewerName,
+            panelPersona: data.question.panelPersona,
+          },
         ]);
       }
     } catch (e: any) {
@@ -181,8 +204,14 @@ export function InterviewChat({
         {transcript.map((t, i) => (
           <div
             key={i}
-            className={`flex ${t.speaker === "candidate" ? "justify-end" : "justify-start"}`}
+            className={`flex flex-col ${t.speaker === "candidate" ? "items-end" : "items-start"}`}
           >
+            {t.speaker === "interviewer" && t.interviewerName && (
+              <p className="mb-1 px-1 text-xs font-medium text-muted-foreground">
+                {t.interviewerName}
+                {t.panelPersona ? ` · ${t.panelPersona}` : ""}
+              </p>
+            )}
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
                 t.speaker === "candidate"

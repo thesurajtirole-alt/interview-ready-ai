@@ -11,12 +11,17 @@ interface NextQuestionInput {
   transcriptSoFar: string; // formatted "Interviewer: ...\nCandidate: ..." history
   lastAnswer: string | null;
   mode: "friendly" | "professional" | "challenging" | "pressure";
+  currentInterviewerName: string | null; // e.g. "Priya" — null if no named panel
+  currentInterviewerPersona: string | null; // e.g. "Engineering Manager"
+  isPersonaChange: boolean; // true if this question switches to a new panel member
 }
 
 /**
  * Generates the interviewer's next line, per spec sections 16-18:
  * one question at a time, references prior answers, follows up
  * naturally, never gives feedback or reveals a score mid-interview.
+ * When a real named panel exists, this also handles natural handoffs
+ * between panel members (spec section 18).
  */
 export async function generateNextQuestion(
   input: NextQuestionInput
@@ -29,7 +34,17 @@ export async function generateNextQuestion(
       "brisk, asks tighter follow-ups and doesn't let vague answers slide — but never rude or hostile",
   };
 
+  const speakerLine = input.currentInterviewerName
+    ? `You are currently speaking as ${input.currentInterviewerName}, the ${input.currentInterviewerPersona}, on the interview panel.`
+    : `You are the interviewer (no specific panel member identified for this question).`;
+
+  const handoffLine = input.isPersonaChange && input.currentInterviewerName
+    ? `\nThis question marks a handoff to a new panel member. Briefly and naturally introduce yourself by name and role before asking your question (e.g. "Thanks — I'll hand it over to ${input.currentInterviewerName}, our ${input.currentInterviewerPersona}, to dig into that." — but written as ${input.currentInterviewerName} speaking in first person). Keep the introduction to one short sentence, then ask your question.`
+    : "";
+
   const prompt = `You are conducting a realistic mock job interview. You are interviewing for the role of ${input.roleTitle} at ${input.companyName}. Your tone right now: ${toneGuidance[input.mode]}.
+
+${speakerLine}${handoffLine}
 
 Current interview stage: ${input.stage}
 This stage should focus on: ${input.stageFocus.join(", ") || "general fit for the role"}
