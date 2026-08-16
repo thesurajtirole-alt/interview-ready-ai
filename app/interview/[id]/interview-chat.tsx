@@ -69,6 +69,17 @@ export function InterviewChat({
   const recognitionRef = useRef<any>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
+  // The <video> element only renders once cameraState === "granted", so
+  // trying to attach the stream inside setupCamera (before that state
+  // update takes effect) can silently fail — videoRef.current is still
+  // null at that instant. This effect re-attaches the stream any time
+  // cameraState changes to "granted", once the element genuinely exists.
+  useEffect(() => {
+    if (cameraState === "granted" && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [cameraState]);
+
   // ---------- Camera + mic setup ----------
   async function setupCamera(deviceIds?: { video?: string; audio?: string }) {
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -84,9 +95,6 @@ export function InterviewChat({
         audio: deviceIds?.audio ? { deviceId: { exact: deviceIds.audio } } : true,
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
       setCameraState("granted");
 
       const devices = await navigator.mediaDevices.enumerateDevices();
