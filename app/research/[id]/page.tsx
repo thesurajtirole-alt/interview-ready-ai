@@ -40,40 +40,52 @@ export default async function ResearchPage({
 
   if (!company) notFound();
 
-  const { data: research } = await supabase
-    .from("company_research")
-    .select("*")
-    .eq("company_id", params.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // Round 1: research, job description, and interviewers only depend on
+  // params.id — run them together instead of one after another.
+  const [{ data: research }, { data: jd }, { data: interviewers }] = await Promise.all([
+    supabase
+      .from("company_research")
+      .select("*")
+      .eq("company_id", params.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("job_descriptions")
+      .select("*")
+      .eq("company_id", params.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("interviewers")
+      .select("*, interviewer_research(*)")
+      .eq("company_id", params.id)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true }),
+  ]);
 
-  const { data: sources } = research
-    ? await supabase
-        .from("research_sources")
-        .select("*")
-        .eq("related_table", "company_research")
-        .eq("related_id", research.id)
-        .order("created_at", { ascending: true })
-    : { data: [] };
-
-  const { data: jd } = await supabase
-    .from("job_descriptions")
-    .select("*")
-    .eq("company_id", params.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const { data: plan } = jd
-    ? await supabase
-        .from("interview_plans")
-        .select("*")
-        .eq("job_description_id", jd.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle()
-    : { data: null };
+  // Round 2: sources depends on research.id, plan depends on jd.id — these
+  // are independent of EACH OTHER, so they also run together.
+  const [{ data: sources }, { data: plan }] = await Promise.all([
+    research
+      ? supabase
+          .from("research_sources")
+          .select("*")
+          .eq("related_table", "company_research")
+          .eq("related_id", research.id)
+          .order("created_at", { ascending: true })
+      : Promise.resolve({ data: [] as any[] }),
+    jd
+      ? supabase
+          .from("interview_plans")
+          .select("*")
+          .eq("job_description_id", jd.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      : Promise.resolve({ data: null as any }),
+  ]);
 
   const blueprint = plan?.blueprint as
     | {
@@ -85,13 +97,6 @@ export default async function ResearchPage({
         questionsToAsk: string[];
       }
     | undefined;
-
-  const { data: interviewers } = await supabase
-    .from("interviewers")
-    .select("*, interviewer_research(*)")
-    .eq("company_id", params.id)
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: true });
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">

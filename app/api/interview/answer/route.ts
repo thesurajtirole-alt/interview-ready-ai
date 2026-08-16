@@ -46,29 +46,37 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Interview not found." }, { status: 404 });
   }
 
-  // 1. Save the answer
-  const { data: answer, error: answerErr } = await supabase
-    .from("interview_answers")
-    .insert({
-      interview_question_id: questionId,
-      answer_text: answerText,
-    })
-    .select()
-    .single();
+  // 1. Save the answer and log the transcript entry together — these are
+  // independent writes, no need to wait for one before the other.
+  const [{ data: answer, error: answerErr }] = await Promise.all([
+    supabase
+      .from("interview_answers")
+      .insert({
+        interview_question_id: questionId,
+        answer_text: answerText,
+      })
+      .select()
+      .single(),
+    supabase.from("transcripts").insert({
+      interview_id: interviewId,
+      speaker: "candidate",
+      content: answerText,
+    }),
+  ]);
   if (answerErr) throw answerErr;
 
-  await supabase.from("transcripts").insert({
-    interview_id: interviewId,
-    speaker: "candidate",
-    content: answerText,
-  });
+  // 2. Evaluate the answer in the background (per spec: never shown mid-interview).
+  // Fetched together with the stage-counting query below since neither depends
+  // on the other.
+  const blueprint = interview.interview_plans.blueprint as {
+    stages: { stage: string; percentage: number }[];
+  };
+  const stagePlan = buildStagePlan(blueprint.stages);
 
-  // 2. Evaluate the answer in the background (per spec: never shown mid-interview)
-  const { data: question } = await supabase
-    .from("interview_questions")
-    .select("*")
-    .eq("id", questionId)
-    .single();
+  const [{ data: question }, { data: allQuestions }] = await Promise.all([
+    supabase.from("interview_questions").select("*").eq("id", questionId).single(),
+    supabase.from("interview_questions").select("stage").eq("interview_id", interviewId),
+  ]);
 
   evaluateAnswer({ question: question.question_text, answer: answerText })
     .then((analysis) =>
@@ -90,16 +98,6 @@ export async function POST(request: Request) {
     });
 
   // 3. Decide the next stage
-  const blueprint = interview.interview_plans.blueprint as {
-    stages: { stage: string; percentage: number }[];
-  };
-  const stagePlan = buildStagePlan(blueprint.stages);
-
-  const { data: allQuestions } = await supabase
-    .from("interview_questions")
-    .select("stage")
-    .eq("interview_id", interviewId);
-
   const askedCountByStage: Record<string, number> = {};
   for (const q of allQuestions ?? []) {
     askedCountByStage[q.stage] = (askedCountByStage[q.stage] ?? 0) + 1;
@@ -116,30 +114,40 @@ export async function POST(request: Request) {
     return NextResponse.json({ complete: true });
   }
 
-  // 4. Build a compact transcript for context (not the full raw history,
-  // per spec section 62: keep token usage low)
-  const { data: recentTranscript } = await supabase
-    .from("transcripts")
-    .select("*")
-    .eq("interview_id", interviewId)
-    .order("spoken_at", { ascending: true })
-    .limit(20);
+  const jd = interview.interview_plans.job_descriptions;
+
+  // recentTranscript, panelRecord, and lastQuestion are all independent
+  // of each other — fetch them together instead of one after another.
+  const [{ data: recentTranscript }, { data: panelRecord }, { data: lastQuestion }] =
+    await Promise.all([
+      supabase
+        .from("transcripts")
+        .select("*")
+        .eq("interview_id", interviewId)
+        .order("spoken_at", { ascending: true })
+        .limit(20),
+      supabase
+        .from("interview_panels")
+        .select("id")
+        .eq("job_description_id", jd.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("interview_questions")
+        .select("interviewer_name")
+        .eq("interview_id", interviewId)
+        .order("asked_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
 
   const transcriptText = (recentTranscript ?? [])
     .map((t) => `${t.speaker === "interviewer" ? "Interviewer" : "Candidate"}: ${t.content}`)
     .join("\n");
 
-  const jd = interview.interview_plans.job_descriptions;
-
-  // Real panel members, if any were added during onboarding.
-  const { data: panelRecord } = await supabase
-    .from("interview_panels")
-    .select("id")
-    .eq("job_description_id", jd.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
+  // Real panel members, if any were added during onboarding — this one
+  // genuinely depends on panelRecord.id, so it has to run after.
   const { data: participants } = panelRecord
     ? await supabase
         .from("interview_participants")
@@ -158,14 +166,6 @@ export async function POST(request: Request) {
 
   // Was the previous question asked by a different panel member? If so,
   // this question should include a natural handoff introduction.
-  const { data: lastQuestion } = await supabase
-    .from("interview_questions")
-    .select("interviewer_name")
-    .eq("interview_id", interviewId)
-    .order("asked_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
   const isPersonaChange =
     !!nextInterviewer && nextInterviewer.name !== lastQuestion?.interviewer_name;
 
@@ -186,25 +186,26 @@ export async function POST(request: Request) {
       isPersonaChange,
     });
 
-    const { data: newQuestion, error: qErr } = await supabase
-      .from("interview_questions")
-      .insert({
+    const [{ data: newQuestion, error: qErr }] = await Promise.all([
+      supabase
+        .from("interview_questions")
+        .insert({
+          interview_id: interviewId,
+          stage: nextStage,
+          question_text: nextQ.questionText,
+          action_type: nextQ.actionType,
+          interviewer_name: nextInterviewer?.name ?? null,
+          panel_persona: nextInterviewer?.persona ?? null,
+        })
+        .select()
+        .single(),
+      supabase.from("transcripts").insert({
         interview_id: interviewId,
-        stage: nextStage,
-        question_text: nextQ.questionText,
-        action_type: nextQ.actionType,
-        interviewer_name: nextInterviewer?.name ?? null,
-        panel_persona: nextInterviewer?.persona ?? null,
-      })
-      .select()
-      .single();
+        speaker: "interviewer",
+        content: nextQ.questionText,
+      }),
+    ]);
     if (qErr) throw qErr;
-
-    await supabase.from("transcripts").insert({
-      interview_id: interviewId,
-      speaker: "interviewer",
-      content: nextQ.questionText,
-    });
 
     return NextResponse.json({
       complete: false,
