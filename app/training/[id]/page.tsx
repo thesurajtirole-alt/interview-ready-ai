@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { TrainingExercises } from "./training-exercises";
+import { Header } from "@/components/header";
 
 export default async function TrainingPlanPage({
   params,
@@ -29,7 +30,9 @@ export default async function TrainingPlanPage({
     .order("order_index", { ascending: true });
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
+    <>
+      <Header />
+      <main className="mx-auto max-w-2xl px-6 py-16">
       <p className="text-sm text-muted-foreground">
         Training · {plan.growth_areas?.name}
       </p>
@@ -52,5 +55,6 @@ export default async function TrainingPlanPage({
         </a>
       </div>
     </main>
+    </>
   );
 }

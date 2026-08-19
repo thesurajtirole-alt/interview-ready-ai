@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ResearchTrigger } from "./research-trigger";
 import { BlueprintTrigger } from "./blueprint-trigger";
 import { InterviewerResearchTrigger } from "./interviewer-trigger";
+import { Header } from "@/components/header";
 
 const CONFIDENCE_LABEL: Record<string, string> = {
   confirmed: "Confirmed",
@@ -99,7 +100,9 @@ export default async function ResearchPage({
     | undefined;
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
+    <>
+      <Header />
+      <main className="mx-auto max-w-3xl px-6 py-16">
       <p className="text-sm text-muted-foreground">Interview brief</p>
       <h1 className="mt-1 font-display text-3xl font-medium">
         {company.name}
@@ -402,6 +405,12 @@ export default async function ResearchPage({
                   >
                     Start mock interview
                   </a>
+                  <a
+                    href={`/final-prep/${company.id}`}
+                    className="mt-3 ml-3 inline-block rounded-lg border border-border px-6 py-2.5 text-sm font-medium transition hover:bg-secondary"
+                  >
+                    Final prep before the real thing →
+                  </a>
                 </div>
               </div>
             )}
@@ -409,5 +418,6 @@ export default async function ResearchPage({
         </div>
       )}
     </main>
+    </>
   );
 }

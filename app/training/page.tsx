@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { TrainingTrigger } from "./training-trigger";
+import { Header } from "@/components/header";
 
 export default async function TrainingPage() {
   const supabase = createClient();
@@ -26,7 +27,9 @@ export default async function TrainingPage() {
   );
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
+    <>
+      <Header />
+      <main className="mx-auto max-w-2xl px-6 py-16">
       <h1 className="font-display text-3xl font-medium">Training</h1>
       <p className="mt-2 text-muted-foreground">
         Short, focused drills built around what your interviews actually
@@ -71,5 +74,6 @@ export default async function TrainingPage() {
         })}
       </div>
     </main>
+    </>
   );
 }

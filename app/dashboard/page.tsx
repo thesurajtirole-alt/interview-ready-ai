@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Header } from "@/components/header";
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -17,7 +18,9 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
+    <>
+      <Header />
+      <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
       <p className="text-sm text-muted-foreground">Signed in as {user.email}</p>
       <h1 className="mt-2 text-2xl font-semibold">You&apos;re in.</h1>
       <p className="mt-3 text-muted-foreground">
@@ -72,5 +75,6 @@ export default async function DashboardPage() {
         </a>
       )}
     </main>
+    </>
   );
 }

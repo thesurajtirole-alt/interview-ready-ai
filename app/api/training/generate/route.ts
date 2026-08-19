@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateTrainingPlan } from "@/lib/ai/training";
+import { z } from "zod";
+import { uuidSchema, validateBody } from "@/lib/validation";
+
+const TrainingGenerateSchema = z.object({ growthAreaId: uuidSchema });
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -12,13 +16,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  const { growthAreaId } = await request.json();
-  if (!growthAreaId) {
-    return NextResponse.json(
-      { error: "growthAreaId is required." },
-      { status: 400 }
-    );
+  const body = await request.json();
+  const validation = validateBody(TrainingGenerateSchema, body);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
+  const { growthAreaId } = validation.data;
 
   const { data: growthArea, error: gaErr } = await supabase
     .from("growth_areas")

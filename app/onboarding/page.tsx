@@ -308,11 +308,17 @@ export default function OnboardingPage() {
               <Field label="Job description">
                 <textarea
                   value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
+                  onChange={(e) => setJobDescription(e.target.value.slice(0, 20000))}
                   rows={5}
+                  maxLength={20000}
                   className="input resize-none"
                   placeholder="Paste what you're walking into."
                 />
+                {jobDescription.length > 15000 && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {jobDescription.length.toLocaleString()} / 20,000 characters
+                  </p>
+                )}
               </Field>
               <Field label="Interview date">
                 <input

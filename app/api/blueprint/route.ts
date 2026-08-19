@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createInterviewBlueprint } from "@/lib/ai/interview-blueprint";
+import { z } from "zod";
+import { uuidSchema, validateBody } from "@/lib/validation";
+
+const BlueprintRequestSchema = z.object({ jobDescriptionId: uuidSchema });
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -12,13 +16,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  const { jobDescriptionId } = await request.json();
-  if (!jobDescriptionId) {
-    return NextResponse.json(
-      { error: "jobDescriptionId is required." },
-      { status: 400 }
-    );
+  const body = await request.json();
+  const validation = validateBody(BlueprintRequestSchema, body);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
+  const { jobDescriptionId } = validation.data;
 
   const { data: jd, error: jdErr } = await supabase
     .from("job_descriptions")

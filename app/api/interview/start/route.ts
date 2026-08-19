@@ -7,6 +7,13 @@ import {
   PERSONA_LABEL,
   type PanelMemberOption,
 } from "@/lib/interview/panel-persona";
+import { z } from "zod";
+import { uuidSchema, interviewModeSchema, validateBody } from "@/lib/validation";
+
+const StartRequestSchema = z.object({
+  jobDescriptionId: uuidSchema,
+  mode: interviewModeSchema.optional(),
+});
 
 const STAGE_LABEL: Record<string, string> = {
   opening: "opening",
@@ -28,13 +35,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  const { jobDescriptionId, mode } = await request.json();
-  if (!jobDescriptionId) {
-    return NextResponse.json(
-      { error: "jobDescriptionId is required." },
-      { status: 400 }
-    );
+  const body = await request.json();
+  const validation = validateBody(StartRequestSchema, body);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
+  const { jobDescriptionId, mode } = validation.data;
 
   const { data: jd, error: jdErr } = await supabase
     .from("job_descriptions")
@@ -131,11 +137,7 @@ export async function POST(request: Request) {
         .join("\n")
     : "(no resume on file yet)";
 
-  const validMode = ["friendly", "professional", "challenging", "pressure"].includes(
-    mode
-  )
-    ? mode
-    : "professional";
+  const validMode = mode ?? "professional";
 
   const { data: interview, error: interviewErr } = await supabase
     .from("interviews")

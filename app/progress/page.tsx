@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ReadinessTrigger } from "./readiness-trigger";
+import { Header } from "@/components/header";
 
 const BREAKDOWN_LABEL: Record<string, string> = {
   technical: "Technical",
@@ -34,7 +35,9 @@ export default async function ProgressPage() {
   const breakdown = (latest?.breakdown ?? {}) as Record<string, number>;
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
+    <>
+      <Header />
+      <main className="mx-auto max-w-2xl px-6 py-16">
       <h1 className="font-display text-3xl font-medium">Your progress</h1>
       <p className="mt-2 text-muted-foreground">
         Based on your practice sessions — not a guarantee, just an honest
@@ -126,5 +129,6 @@ export default async function ProgressPage() {
         </a>
       </div>
     </main>
+    </>
   );
 }

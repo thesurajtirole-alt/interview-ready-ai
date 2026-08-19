@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { evaluateAttempt } from "@/lib/ai/training";
+import { z } from "zod";
+import { uuidSchema, trainingResponseSchema, validateBody } from "@/lib/validation";
+
+const AttemptRequestSchema = z.object({
+  exerciseId: uuidSchema,
+  responseText: trainingResponseSchema,
+  durationSeconds: z.number().int().positive().max(3600).optional(),
+});
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -12,13 +20,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  const { exerciseId, responseText, durationSeconds } = await request.json();
-  if (!exerciseId || !responseText) {
-    return NextResponse.json(
-      { error: "exerciseId and responseText are required." },
-      { status: 400 }
-    );
+  const body = await request.json();
+  const validation = validateBody(AttemptRequestSchema, body);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
+  const { exerciseId, responseText, durationSeconds } = validation.data;
 
   const { data: exercise, error: exErr } = await supabase
     .from("training_exercises")

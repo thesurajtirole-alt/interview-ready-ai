@@ -8,6 +8,14 @@ import {
   PERSONA_LABEL,
   type PanelMemberOption,
 } from "@/lib/interview/panel-persona";
+import { z } from "zod";
+import { uuidSchema, answerTextSchema, validateBody } from "@/lib/validation";
+
+const AnswerRequestSchema = z.object({
+  interviewId: uuidSchema,
+  questionId: uuidSchema,
+  answerText: answerTextSchema,
+});
 
 const STAGE_LABEL: Record<string, string> = {
   opening: "opening",
@@ -29,13 +37,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  const { interviewId, questionId, answerText } = await request.json();
-  if (!interviewId || !questionId || !answerText) {
-    return NextResponse.json(
-      { error: "interviewId, questionId, and answerText are required." },
-      { status: 400 }
-    );
+  const body = await request.json();
+  const validation = validateBody(AnswerRequestSchema, body);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
+  const { interviewId, questionId, answerText } = validation.data;
 
   const { data: interview, error: interviewErr } = await supabase
     .from("interviews")

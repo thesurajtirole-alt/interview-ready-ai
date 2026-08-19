@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { extractResumeText } from "@/lib/resume/extract-text";
 import { analyzeResume } from "@/lib/ai/resume-analysis";
+import { z } from "zod";
+import { uuidSchema, validateBody } from "@/lib/validation";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+
+const ResumeRequestSchema = z.object({ resumeId: uuidSchema });
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -15,10 +19,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  const { resumeId } = await request.json();
-  if (!resumeId) {
-    return NextResponse.json({ error: "resumeId is required." }, { status: 400 });
+  const body = await request.json();
+  const validation = validateBody(ResumeRequestSchema, body);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
+  const { resumeId } = validation.data;
 
   const { data: resume, error: resumeErr } = await supabase
     .from("resumes")

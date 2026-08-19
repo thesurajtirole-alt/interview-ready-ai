@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { researchCompany, researchRole } from "@/lib/research/company-research";
+import { z } from "zod";
+import { uuidSchema, validateBody } from "@/lib/validation";
+
+const ResearchRequestSchema = z.object({ companyId: uuidSchema });
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -12,13 +16,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  const { companyId } = await request.json();
-  if (!companyId) {
-    return NextResponse.json(
-      { error: "companyId is required." },
-      { status: 400 }
-    );
+  const body = await request.json();
+  const validation = validateBody(ResearchRequestSchema, body);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
+  const { companyId } = validation.data;
 
   // Fetch the company — RLS ensures this only succeeds if it's the
   // logged-in user's own row.

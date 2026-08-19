@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ResumeAnalysisTrigger } from "./resume-analysis-trigger";
+import { Header } from "@/components/header";
 
 export default async function ProfilePage() {
   const supabase = createClient();
@@ -18,7 +19,9 @@ export default async function ProfilePage() {
     .limit(1);
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
+    <>
+      <Header />
+      <main className="mx-auto max-w-2xl px-6 py-16">
       <h1 className="font-display text-3xl font-medium">Your profile</h1>
       <p className="mt-2 text-muted-foreground">
         Bring your story — this is what we use to prepare you.
@@ -131,5 +134,6 @@ export default async function ProfilePage() {
         </a>
       </div>
     </main>
+    </>
   );
 }

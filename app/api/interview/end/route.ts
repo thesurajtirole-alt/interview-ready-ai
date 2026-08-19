@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
+import { uuidSchema, validateBody } from "@/lib/validation";
+
+const EndRequestSchema = z.object({ interviewId: uuidSchema });
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -11,10 +15,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  const { interviewId } = await request.json();
-  if (!interviewId) {
-    return NextResponse.json({ error: "interviewId is required." }, { status: 400 });
+  const body = await request.json();
+  const validation = validateBody(EndRequestSchema, body);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
+  const { interviewId } = validation.data;
 
   const { data: interview } = await supabase
     .from("interviews")
