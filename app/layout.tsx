@@ -14,6 +14,22 @@ export const metadata: Metadata = {
   title: "InterviewReady AI — Your interview isn't a test. It's a skill you can train.",
   description:
     "An AI interview coach that researches your company, role, and panel, runs a realistic mock interview, and builds a personalized training plan — with no shame, no judgment, just improvement.",
+  keywords: [
+    "AI interview coach",
+    "AI mock interview",
+    "interview preparation",
+    "interview practice",
+    "personalized interview preparation",
+    "AI interview training",
+    "mock interview practice",
+    "job interview simulator",
+  ],
+  openGraph: {
+    title: "InterviewReady AI — Your interview isn't a test. It's a skill you can train.",
+    description:
+      "An AI interview coach that researches your company, role, and panel, runs a realistic mock interview, and builds a personalized training plan.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

@@ -355,6 +355,7 @@ export function InterviewChat({
               height="88"
               viewBox="0 0 88 88"
               className="relative"
+              aria-hidden="true"
             >
               <circle cx="44" cy="44" r="43" fill="var(--avatar-ring, #E8E2D6)" opacity="0.5" />
               <circle cx="44" cy="34" r="15" fill="#2C4A3E" />
@@ -393,6 +394,8 @@ export function InterviewChat({
           </div>
           <button
             onClick={() => setMuted((m) => !m)}
+            aria-label={muted ? "Unmute AI voice" : "Mute AI voice"}
+            aria-pressed={muted}
             className="absolute bottom-2 right-2 rounded-lg bg-background/80 px-2 py-1 text-[10px] text-muted-foreground hover:bg-background"
           >
             {muted ? "Unmute" : "Mute"}
@@ -546,6 +549,8 @@ export function InterviewChat({
         {speechSupported && (
           <button
             onClick={toggleListening}
+            aria-label={listening ? "Stop voice input" : "Start voice input"}
+            aria-pressed={listening}
             className={`rounded-lg border px-3 py-2.5 text-sm transition ${
               listening
                 ? "border-accent bg-accent/10 text-accent"

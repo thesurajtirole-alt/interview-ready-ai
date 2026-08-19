@@ -285,6 +285,14 @@ export default function Home() {
         >
           Prepare for my interview
         </a>
+        <div className="mt-4">
+          <a
+            href="/demo"
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            Or see a demo first →
+          </a>
+        </div>
       </Section>
 
       {/* ---------- FOOTER ---------- */}

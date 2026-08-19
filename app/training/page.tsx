@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { TrainingTrigger } from "./training-trigger";
+import { SurpriseTrigger } from "./surprise-trigger";
 import { Header } from "@/components/header";
 
 export default async function TrainingPage() {
@@ -35,6 +36,10 @@ export default async function TrainingPage() {
         Short, focused drills built around what your interviews actually
         showed — not generic practice.
       </p>
+
+      <div className="mt-5">
+        <SurpriseTrigger />
+      </div>
 
       {(!candidateGrowthAreas || candidateGrowthAreas.length === 0) && (
         <p className="mt-8 text-sm text-muted-foreground">

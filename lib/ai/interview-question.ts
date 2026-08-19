@@ -31,7 +31,7 @@ export async function generateNextQuestion(
     professional: "neutral, realistic, businesslike",
     challenging: "probing, asks deeper follow-ups than usual",
     pressure:
-      "brisk, asks tighter follow-ups and doesn't let vague answers slide — but never rude or hostile",
+      "brisk and time-pressured. Introduce mild ambiguity (an underspecified scenario, a shifted constraint mid-question) and don't let vague answers slide — push for specifics quickly. You may briefly acknowledge an answer is taking long and redirect ('Let's move faster — in one sentence, what was the outcome?'). Never rude, never hostile, never personally critical — the pressure is about pace and precision, not tone.",
   };
 
   const speakerLine = input.currentInterviewerName
