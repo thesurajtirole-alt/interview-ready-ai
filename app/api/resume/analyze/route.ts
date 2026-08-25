@@ -37,7 +37,6 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Download the real uploaded file from private storage.
     const { data: fileBlob, error: downloadErr } = await supabase.storage
       .from("resumes")
       .download(resume.storage_path);
@@ -84,8 +83,11 @@ export async function POST(request: Request) {
       .eq("id", resumeId);
     if (updateResumeErr) throw updateResumeErr;
 
-    // Also save each extracted skill into the shared skills reference
-    // table + link to the candidate (spec tables: skills, candidate_skills)
+    // Save each extracted skill into the shared skills reference
+    // table + link to the candidate (spec tables: skills, candidate_skills).
+    // FIX: default new resume-derived skills to "technical" so they show
+    // up grouped in the Skills editor instead of falling into
+    // "Uncategorized" — the candidate can always re-categorize later.
     for (const skillName of analysis.skills) {
       const { data: existingSkill } = await supabase
         .from("skills")
@@ -101,7 +103,7 @@ export async function POST(request: Request) {
 
       if (skillId) {
         await supabase.from("candidate_skills").upsert(
-          { user_id: user.id, skill_id: skillId },
+          { user_id: user.id, skill_id: skillId, category: "technical" },
           { onConflict: "user_id,skill_id" }
         );
       }

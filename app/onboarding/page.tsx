@@ -161,6 +161,7 @@ export default function OnboardingPage() {
       // 5. Resume upload (optional) — automatically analyzed too, so the
       // blueprint and interview have real resume data without the
       // candidate needing a separate manual step.
+      let selectedResumeId: string | null = null;
       if (resumeFile) {
         const path = `${user.id}/${Date.now()}-${resumeFile.name}`;
         const { error: uploadErr } = await supabase.storage
@@ -179,6 +180,7 @@ export default function OnboardingPage() {
           .select()
           .single();
         if (resumeRowErr) throw resumeRowErr;
+        selectedResumeId = resumeRow.id;
 
         // Best-effort: if analysis fails (e.g. a scanned/image-only PDF),
         // don't block onboarding — the candidate can retry from /profile.
@@ -191,6 +193,19 @@ export default function OnboardingPage() {
         } catch {
           // Silently continue — analysis can be retried later.
         }
+      } else {
+        // No new resume this time — fall back to the candidate's default
+        // (or most recent) resume from the vault, if they have one.
+        const { data: existingDefault } = await supabase
+          .from("resumes")
+          .select("id")
+          .eq("user_id", user.id)
+          .is("deleted_at", null)
+          .order("is_default", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        selectedResumeId = existingDefault?.id ?? null;
       }
 
       // 6. Confidence check -> profile
@@ -199,6 +214,19 @@ export default function OnboardingPage() {
         .update({ confidence_level: confidence })
         .eq("id", user.id);
       if (profileErr) throw profileErr;
+
+      // 7. Interview Target — the organizing object tying this company,
+      // role, and resume together for the dashboard.
+      const { error: targetErr } = await supabase
+        .from("interview_targets")
+        .insert({
+          user_id: user.id,
+          company_id: company.id,
+          job_description_id: jd.id,
+          resume_id: selectedResumeId,
+          status: "preparing",
+        });
+      if (targetErr) throw targetErr;
 
       router.push("/dashboard");
       router.refresh();
