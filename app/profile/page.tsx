@@ -6,6 +6,7 @@ import { PersonalInfoForm } from "./personal-info-form";
 import { CareerPreferencesForm } from "./career-preferences-form";
 import { SkillsEditor } from "./skills-editor";
 import { ResumeVault } from "./resume-vault";
+import { ProfileCompletion } from "./profile-completion";
 
 export default async function ProfilePage() {
   const supabase = createClient();
@@ -62,8 +63,6 @@ export default async function ProfilePage() {
     confidence: cs.confidence,
   }));
 
-  // Build a map of resumeId -> which company names use it, for the
-  // Resume Vault's delete-safety warning.
   const usageMap: Record<string, string[]> = {};
   for (const t of targets ?? []) {
     if (!t.resume_id) continue;
@@ -87,6 +86,25 @@ export default async function ProfilePage() {
           Your own information, editable any time — plus what we&apos;ve
           learned from your resume.
         </p>
+
+        <div className="mt-6">
+          <ProfileCompletion
+            data={{
+              hasPreferredName: !!profile?.preferred_name,
+              hasPhone: !!profile?.phone,
+              hasLocation: !!profile?.location,
+              hasLinkedin: !!profile?.linkedin_url,
+              hasCurrentTitle: !!profile?.current_job_title,
+              hasCurrentCompany: !!profile?.current_company,
+              hasYearsExperience: profile?.years_experience != null,
+              hasDesiredRoles: (preferences?.desired_roles ?? []).length > 0,
+              hasIndustries: (preferences?.industries ?? []).length > 0,
+              hasWorkPreference: !!preferences?.work_preference,
+              hasSkills: skillRows.length > 0,
+              hasResume: (resumes ?? []).length > 0,
+            }}
+          />
+        </div>
 
         {/* ---------- Candidate Profile (editable) ---------- */}
         <section className="mt-10">
