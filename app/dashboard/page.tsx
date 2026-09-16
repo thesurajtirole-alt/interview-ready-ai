@@ -59,7 +59,6 @@ export default async function DashboardPage() {
         .order("created_at", { ascending: false })
     : { data: [] };
 
-  // Keep only the most recent readiness score per job_description_id.
   const readinessByJd = new Map<string, number>();
   for (const r of readinessRows ?? []) {
     if (!readinessByJd.has(r.job_description_id)) {
@@ -129,31 +128,44 @@ export default async function DashboardPage() {
                   t.resumes?.label || t.resumes?.file_name || null;
 
                 return (
-                  <a
+                  <div
                     key={t.id}
-                    href={`/research/${t.company_id}`}
-                    className="block rounded-xl border border-border p-5 transition hover:bg-secondary"
+                    className="rounded-xl border border-border p-5 transition hover:bg-secondary"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium">{t.companies?.name}</p>
-                        <p className="mt-0.5 text-sm text-muted-foreground">
-                          {t.job_descriptions?.title ?? "Role not set"}
-                        </p>
+                    <a href={`/research/${t.company_id}`} className="block">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium">{t.companies?.name}</p>
+                          <p className="mt-0.5 text-sm text-muted-foreground">
+                            {t.job_descriptions?.title ?? "Role not set"}
+                          </p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+                          {STATUS_LABEL[t.status] ?? t.status}
+                        </span>
                       </div>
-                      <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
-                        {STATUS_LABEL[t.status] ?? t.status}
-                      </span>
-                    </div>
 
-                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                      {days && <span>{days}</span>}
-                      {readiness !== undefined && (
-                        <span>Readiness: {readiness}/100</span>
-                      )}
-                      {resumeLabel && <span>Resume: {resumeLabel}</span>}
-                    </div>
-                  </a>
+                      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        {days && <span>{days}</span>}
+                        {readiness !== undefined && (
+                          <span>Readiness: {readiness}/100</span>
+                        )}
+                        {resumeLabel && <span>Resume: {resumeLabel}</span>}
+                      </div>
+                    </a>
+                    <a
+                      href={`/prep-plan/${t.id}`}
+                      className="mt-3 inline-block text-xs font-medium text-primary hover:underline"
+                    >
+                      {t.prep_plan ? "View prep plan →" : "Build a day-by-day prep plan →"}
+                    </a>
+                    <a
+                      href={`/feedback/${t.id}`}
+                      className="mt-3 ml-4 inline-block text-xs font-medium text-primary hover:underline"
+                    >
+                      Interview feedback →
+                    </a>
+                  </div>
                 );
               })}
             </div>
