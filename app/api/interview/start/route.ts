@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkAndIncrementUsage, UsageLimitError } from "@/lib/usage/enforce";
 import { createClient } from "@/lib/supabase/server";
 import { generateNextQuestion } from "@/lib/ai/interview-question";
 import { buildStagePlan } from "@/lib/interview/stage-plan";
@@ -33,6 +34,14 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+
+  try {
+    await checkAndIncrementUsage(supabase, user.id, "full_interview");
+  } catch (e) {
+    if (e instanceof UsageLimitError) {
+      return NextResponse.json({ error: e.message }, { status: 402 });
+    }
   }
 
   const body = await request.json();
