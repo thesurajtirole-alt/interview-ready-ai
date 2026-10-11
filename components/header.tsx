@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+﻿import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
 
 export async function Header() {
@@ -27,6 +27,9 @@ export async function Header() {
             </a>
             <a href="/profile" className="text-muted-foreground hover:text-foreground">
               Profile
+            </a>
+            <a href="/settings" className="text-muted-foreground hover:text-foreground">
+              Settings
             </a>
             <SignOutButton />
           </nav>

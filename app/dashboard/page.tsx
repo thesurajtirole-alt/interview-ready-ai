@@ -1,6 +1,8 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Header } from "@/components/header";
+import { ProgressStats } from "./progress-stats";
+import { DeleteTargetButton } from "./delete-target-button";
 
 const STATUS_LABEL: Record<string, string> = {
   draft: "Draft",
@@ -102,6 +104,7 @@ export default async function DashboardPage() {
             <h1 className="font-display text-2xl font-medium">
               Your interview targets
             </h1>
+            <ProgressStats userId={user.id} />
 
             {growthAreas?.growth_areas?.name && (
               <div className="mt-6 rounded-xl border border-border p-5">
@@ -165,6 +168,7 @@ export default async function DashboardPage() {
                     >
                       Interview feedback →
                     </a>
+                    <DeleteTargetButton targetId={t.id} />
                   </div>
                 );
               })}
