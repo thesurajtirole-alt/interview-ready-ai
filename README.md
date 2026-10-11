@@ -1,4 +1,4 @@
-# InterviewReady AI
+﻿# Truepanel
 
 > Your interview isn't a test. It's a skill you can train.
 

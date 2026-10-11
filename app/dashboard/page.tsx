@@ -1,4 +1,4 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Header } from "@/components/header";
 import { ProgressStats } from "./progress-stats";
@@ -104,6 +104,33 @@ export default async function DashboardPage() {
             <h1 className="font-display text-2xl font-medium">
               Your interview targets
             </h1>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <a
+                href="/onboarding"
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+              >
+                + Prep for another interview
+              </a>
+              <a
+                href="/training"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-secondary"
+              >
+                Go to training
+              </a>
+              <a
+                href="/progress"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-secondary"
+              >
+                Am I ready?
+              </a>
+              <a
+                href="/profile"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-secondary"
+              >
+                Your profile
+              </a>
+            </div>
+
             <ProgressStats userId={user.id} />
 
             {growthAreas?.growth_areas?.name && (
@@ -156,49 +183,24 @@ export default async function DashboardPage() {
                         {resumeLabel && <span>Resume: {resumeLabel}</span>}
                       </div>
                     </a>
-                    <a
-                      href={`/prep-plan/${t.id}`}
-                      className="mt-3 inline-block text-xs font-medium text-primary hover:underline"
-                    >
-                      {t.prep_plan ? "View prep plan →" : "Build a day-by-day prep plan →"}
-                    </a>
-                    <a
-                      href={`/feedback/${t.id}`}
-                      className="mt-3 ml-4 inline-block text-xs font-medium text-primary hover:underline"
-                    >
-                      Interview feedback →
-                    </a>
-                    <DeleteTargetButton targetId={t.id} />
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <a
+                        href={`/prep-plan/${t.id}`}
+                        className="rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition hover:opacity-90"
+                      >
+                        {t.prep_plan ? "View prep plan" : "Build a day-by-day prep plan"}
+                      </a>
+                      <a
+                        href={`/feedback/${t.id}`}
+                        className="rounded-lg border border-border px-4 py-2 text-xs font-medium transition hover:bg-background"
+                      >
+                        Interview feedback
+                      </a>
+                      <DeleteTargetButton targetId={t.id} />
+                    </div>
                   </div>
                 );
               })}
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-4">
-              <a
-                href="/onboarding"
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                + Prep for another interview
-              </a>
-              <a
-                href="/training"
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                Go to training →
-              </a>
-              <a
-                href="/progress"
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                Am I ready? →
-              </a>
-              <a
-                href="/profile"
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                Your profile →
-              </a>
             </div>
           </>
         )}

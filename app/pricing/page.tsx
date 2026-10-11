@@ -1,7 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
+﻿import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "Pricing — InterviewReady AI",
+  title: "Pricing — Truepanel",
   description: "Simple, honest pricing for AI-powered interview preparation.",
 };
 

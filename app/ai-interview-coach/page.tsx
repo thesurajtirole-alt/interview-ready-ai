@@ -1,5 +1,5 @@
-export const metadata = {
-  title: "AI Interview Coach — Personalized Interview Preparation | InterviewReady AI",
+﻿export const metadata = {
+  title: "AI Interview Coach — Personalized Interview Preparation | Truepanel",
   description:
     "An AI interview coach researches your target company, role, and panel, runs a realistic mock interview, and builds a training plan around your actual weaknesses — not generic tips.",
 };

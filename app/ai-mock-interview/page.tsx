@@ -1,5 +1,5 @@
-export const metadata = {
-  title: "AI Mock Interview — Practice with a Realistic Voice & Video Panel | InterviewReady AI",
+﻿export const metadata = {
+  title: "AI Mock Interview — Practice with a Realistic Voice & Video Panel | Truepanel",
   description:
     "Practice a realistic AI mock interview with voice, video, and a simulated panel of interviewers — built around the actual company, role, and job description you're preparing for.",
 };

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -78,7 +78,7 @@ export default function Home() {
           transition={{ duration: 0.6 }}
           className="relative mb-5 text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground"
         >
-          InterviewReady AI
+          Truepanel
         </motion.p>
 
         <motion.h1
@@ -298,7 +298,7 @@ export default function Home() {
       {/* ---------- FOOTER ---------- */}
       <footer className="border-t border-border px-6 py-10">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
-          <p>InterviewReady AI</p>
+          <p>Truepanel</p>
           <div className="flex gap-6">
             <a href="/privacy" className="hover:text-foreground">
               Privacy

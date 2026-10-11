@@ -1,5 +1,5 @@
-export const metadata = {
-  title: "Demo — InterviewReady AI",
+﻿export const metadata = {
+  title: "Demo — Truepanel",
 };
 
 export default function DemoPage() {

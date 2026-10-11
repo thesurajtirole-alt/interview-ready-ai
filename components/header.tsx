@@ -11,7 +11,7 @@ export async function Header() {
     <header className="border-b border-border">
       <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
         <a href={user ? "/dashboard" : "/"} className="font-display text-lg font-medium">
-          InterviewReady <span className="text-primary">AI</span>
+          True<span className="text-primary">panel</span>
         </a>
 
         {user ? (

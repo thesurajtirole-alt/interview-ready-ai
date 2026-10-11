@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Fraunces } from "next/font/google";
 import "./globals.css";
 
@@ -11,7 +11,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "InterviewReady AI — Your interview isn't a test. It's a skill you can train.",
+  title: "Truepanel — Your interview isn't a test. It's a skill you can train.",
   description:
     "An AI interview coach that researches your company, role, and panel, runs a realistic mock interview, and builds a personalized training plan — with no shame, no judgment, just improvement.",
   keywords: [
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     "job interview simulator",
   ],
   openGraph: {
-    title: "InterviewReady AI — Your interview isn't a test. It's a skill you can train.",
+    title: "Truepanel — Your interview isn't a test. It's a skill you can train.",
     description:
       "An AI interview coach that researches your company, role, and panel, runs a realistic mock interview, and builds a personalized training plan.",
     type: "website",
@@ -37,14 +37,14 @@ const structuredData = {
   "@graph": [
     {
       "@type": "Organization",
-      "name": "InterviewReady AI",
+      "name": "Truepanel",
       "url": "https://interview-ready-ai-sooty.vercel.app",
       "description":
         "An AI interview coach that researches your company, role, and panel, runs a realistic mock interview, and builds a personalized training plan.",
     },
     {
       "@type": "SoftwareApplication",
-      "name": "InterviewReady AI",
+      "name": "Truepanel",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
       "description":
@@ -57,7 +57,7 @@ const structuredData = {
     },
     {
       "@type": "WebSite",
-      "name": "InterviewReady AI",
+      "name": "Truepanel",
       "url": "https://interview-ready-ai-sooty.vercel.app",
     },
   ],
