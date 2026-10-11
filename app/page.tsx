@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -302,6 +302,9 @@ export default function Home() {
           <div className="flex gap-6">
             <a href="/privacy" className="hover:text-foreground">
               Privacy
+            </a>
+            <a href="/terms" className="hover:text-foreground">
+              Terms
             </a>
             <a href="/login" className="hover:text-foreground">
               Log in
