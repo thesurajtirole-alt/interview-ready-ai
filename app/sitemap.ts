@@ -1,7 +1,7 @@
-import { MetadataRoute } from "next";
+﻿import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://interview-ready-ai-sooty.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://truepanel.vercel.app";
 
   return [
     {

@@ -38,7 +38,7 @@ const structuredData = {
     {
       "@type": "Organization",
       "name": "Truepanel",
-      "url": "https://interview-ready-ai-sooty.vercel.app",
+      "url": "https://truepanel.vercel.app",
       "description":
         "An AI interview coach that researches your company, role, and panel, runs a realistic mock interview, and builds a personalized training plan.",
     },
@@ -58,7 +58,7 @@ const structuredData = {
     {
       "@type": "WebSite",
       "name": "Truepanel",
-      "url": "https://interview-ready-ai-sooty.vercel.app",
+      "url": "https://truepanel.vercel.app",
     },
   ],
 };
