@@ -56,6 +56,30 @@ export default function Home() {
 
   return (
     <main className="overflow-x-hidden">
+      {/* ---------- TOP BAR ---------- */}
+      <nav className="absolute left-0 right-0 top-0 z-10 mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
+        <a href="/" className="font-display text-lg font-medium">
+          True<span className="text-primary">panel</span>
+        </a>
+        <div className="flex items-center gap-5 text-sm">
+          <a href="/pricing" className="text-muted-foreground hover:text-foreground">
+            Pricing
+          </a>
+          <a href="/demo" className="text-muted-foreground hover:text-foreground">
+            Demo
+          </a>
+          <a href="/login" className="text-muted-foreground hover:text-foreground">
+            Log in
+          </a>
+          <a
+            href="/signup"
+            className="rounded-lg bg-primary px-4 py-1.5 text-primary-foreground transition hover:opacity-90"
+          >
+            Sign up
+          </a>
+        </div>
+      </nav>
+
       {/* ---------- HERO ---------- */}
       <section className="relative flex min-h-[92vh] flex-col items-center justify-center px-6 text-center">
         {/* Signature element: a slow breathing pulse, echoing "take a breath" */}
@@ -300,6 +324,9 @@ export default function Home() {
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
           <p>Truepanel</p>
           <div className="flex gap-6">
+            <a href="/pricing" className="hover:text-foreground">
+              Pricing
+            </a>
             <a href="/privacy" className="hover:text-foreground">
               Privacy
             </a>

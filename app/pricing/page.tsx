@@ -1,4 +1,5 @@
-﻿import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { Header } from "@/components/header";
 
 export const metadata = {
   title: "Pricing — Truepanel",
@@ -17,6 +18,8 @@ export default async function PricingPage() {
     .order("display_order", { ascending: true });
 
   return (
+    <>
+    <Header />
     <main className="mx-auto max-w-3xl px-6 py-16">
       <div className="text-center">
         <h1 className="font-display text-3xl font-medium">
@@ -95,5 +98,6 @@ export default async function PricingPage() {
         room sooner, reach out.
       </p>
     </main>
+    </>
   );
 }
