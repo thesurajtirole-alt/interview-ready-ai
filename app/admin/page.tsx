@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getAdminUser } from "@/lib/admin/guard";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Header } from "@/components/header";
 
@@ -19,6 +19,7 @@ const METRIC_LABEL: Record<string, string> = {
 function fmtDate(d?: string | null) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("en-IN", {
+    timeZone: "Asia/Kolkata",
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -33,25 +34,15 @@ function countBy(rows: { user_id: string }[] | null) {
 
 export default async function AdminPage() {
   // --- Access control: only emails listed in ADMIN_EMAILS get in. ---
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const allowed = (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-
-  if (!user?.email || !allowed.includes(user.email.toLowerCase())) {
+  const user = await getAdminUser();
+  if (!user) {
     notFound(); // looks like a normal 404 to everyone else
   }
 
   const admin = createAdminClient();
+  const now = new Date();
   const periodStart = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth(),
-    1
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
   )
     .toISOString()
     .slice(0, 10);
@@ -74,6 +65,20 @@ export default async function AdminPage() {
         .select("metric, count")
         .eq("period_start", periodStart),
     ]);
+
+  const errors: string[] = [];
+  const named: [string, { error: { message: string } | null }][] = [
+    ["users", usersRes as any],
+    ["completed interviews", completedRes as any],
+    ["interview targets", targetsRes as any],
+    ["interviews", interviewsRes as any],
+    ["outcomes", outcomesRes as any],
+    ["resumes", resumesRes as any],
+    ["usage", usageRes as any],
+  ];
+  for (const [name, r] of named) {
+    if (r.error) errors.push(`${name}: ${r.error.message}`);
+  }
 
   const users = (usersRes.data?.users ?? []).sort(
     (a, b) =>
@@ -107,8 +112,26 @@ export default async function AdminPage() {
       <main className="mx-auto max-w-4xl px-6 py-12">
         <h1 className="font-display text-3xl font-medium">Admin</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Signed in as {user!.email}. Only visible to emails in ADMIN_EMAILS.
+          Signed in as {user.email}. Only visible to emails in ADMIN_EMAILS.
         </p>
+
+        {errors.length > 0 && (
+          <div className="mt-6 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700">
+            <p className="font-medium">Some data could not be loaded:</p>
+            <ul className="mt-1 list-disc pl-5">
+              {errors.map((e) => (
+                <li key={e}>{e}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <a
+          href="/admin/pricing"
+          className="mt-5 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+        >
+          Edit pricing and limits
+        </a>
 
         <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {stats.map((s) => (
