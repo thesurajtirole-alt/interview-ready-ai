@@ -1,7 +1,7 @@
 ﻿import type { Metadata } from "next";
 import { Fraunces } from "next/font/google";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
