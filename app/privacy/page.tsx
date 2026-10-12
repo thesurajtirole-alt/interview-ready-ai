@@ -82,7 +82,9 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <span className="font-medium text-foreground">Vercel</span>{" "}
-                hosts the application.
+                hosts the application and counts page visits with Vercel Web
+                Analytics. It does not use cookies and does not follow you
+                across other websites.
               </li>
               <li>
                 <span className="font-medium text-foreground">Resend</span>{" "}

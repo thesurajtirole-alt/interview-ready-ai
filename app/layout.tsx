@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from "next";
 import { Fraunces } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -76,7 +77,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body className="min-h-screen antialiased">{children}</body>
+      <body className="min-h-screen antialiased">{children}<Analytics /></body>
     </html>
   );
 }
