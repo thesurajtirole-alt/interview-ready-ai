@@ -11,7 +11,7 @@ export function inferPanelPersona(roleTitle: string | null | undefined): PanelPe
   const t = roleTitle.toLowerCase();
 
   if (
-    t.includes("hr") ||
+    /\bhr\b/.test(t) ||
     t.includes("people") ||
     t.includes("talent") ||
     t.includes("recruiter") ||
