@@ -1,4 +1,6 @@
-﻿export const metadata = {
+import { Header } from "@/components/header";
+
+export const metadata = {
   title: "AI Mock Interview — Practice with a Realistic Voice & Video Panel | Truepanel",
   description:
     "Practice a realistic AI mock interview with voice, video, and a simulated panel of interviewers — built around the actual company, role, and job description you're preparing for.",
@@ -6,6 +8,8 @@
 
 export default function AIMockInterviewPage() {
   return (
+    <>
+    <Header />
     <main className="mx-auto max-w-2xl px-6 py-16">
       <h1 className="font-display text-3xl font-medium">
         What is an AI mock interview?
@@ -72,5 +76,6 @@ export default function AIMockInterviewPage() {
         </a>
       </div>
     </main>
+    </>
   );
 }

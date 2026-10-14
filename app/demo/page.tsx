@@ -1,9 +1,13 @@
-﻿export const metadata = {
+import { Header } from "@/components/header";
+
+export const metadata = {
   title: "Demo — Truepanel",
 };
 
 export default function DemoPage() {
   return (
+    <>
+    <Header />
     <main className="mx-auto max-w-2xl px-6 py-16">
       <div className="mb-8 inline-block rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
         Demo — fictional company &amp; candidate, not real data
@@ -129,5 +133,6 @@ export default function DemoPage() {
         </a>
       </div>
     </main>
+    </>
   );
 }

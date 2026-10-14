@@ -1,4 +1,6 @@
-﻿export const metadata = {
+import { Header } from "@/components/header";
+
+export const metadata = {
   title: "AI Interview Coach — Personalized Interview Preparation | Truepanel",
   description:
     "An AI interview coach researches your target company, role, and panel, runs a realistic mock interview, and builds a training plan around your actual weaknesses — not generic tips.",
@@ -6,6 +8,8 @@
 
 export default function AIInterviewCoachPage() {
   return (
+    <>
+    <Header />
     <main className="mx-auto max-w-2xl px-6 py-16">
       <h1 className="font-display text-3xl font-medium">
         What is an AI interview coach?
@@ -77,5 +81,6 @@ export default function AIInterviewCoachPage() {
         </a>
       </div>
     </main>
+    </>
   );
 }
