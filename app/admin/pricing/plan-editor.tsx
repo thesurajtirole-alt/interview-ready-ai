@@ -15,6 +15,7 @@ export function PlanEditor({
   name,
   isFree,
   priceDollars: initialPrice,
+  priceInr: initialInr,
   active: initialActive,
   features: initialFeatures,
 }: {
@@ -22,11 +23,13 @@ export function PlanEditor({
   name: string;
   isFree: boolean;
   priceDollars: number;
+  priceInr: number;
   active: boolean;
   features: Feature[];
 }) {
   const router = useRouter();
   const [price, setPrice] = useState(String(initialPrice));
+  const [priceInr, setPriceInr] = useState(String(initialInr));
   const [active, setActive] = useState(initialActive);
   const [features, setFeatures] = useState(
     initialFeatures.map((f) => ({
@@ -52,6 +55,12 @@ export function PlanEditor({
       setSaving(false);
       return;
     }
+    const inrNum = Number(priceInr);
+    if (!Number.isInteger(inrNum) || inrNum < 0) {
+      setMessage("Rupee price must be a whole number (0 or more).");
+      setSaving(false);
+      return;
+    }
     for (const f of features) {
       if (f.limitText.trim() !== "" && !/^\d+$/.test(f.limitText.trim())) {
         setMessage(`"${f.label}" limit must be a whole number, or empty for unlimited.`);
@@ -66,6 +75,7 @@ export function PlanEditor({
       body: JSON.stringify({
         planId,
         priceDollars: priceNum,
+        priceInr: inrNum,
         active,
         features: features.map((f) => ({
           id: f.id,
@@ -121,6 +131,22 @@ export function PlanEditor({
         />
         <p className="mt-1 text-xs text-muted-foreground">
           Whole dollars. 0 shows as &quot;Free&quot;. No payments are collected yet.
+        </p>
+
+        <label className="mt-4 block text-sm font-medium">
+          Price per month (INR ₹)
+        </label>
+        <input
+          value={priceInr}
+          onChange={(e) => {
+            setPriceInr(e.target.value);
+            setMessage(null);
+          }}
+          inputMode="numeric"
+          className="mt-1 w-32 rounded-lg border border-input bg-transparent px-3 py-2 text-sm"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Whole rupees. Shown to visitors who pick ₹ INR on the pricing page.
         </p>
       </div>
 

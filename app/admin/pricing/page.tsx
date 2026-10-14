@@ -19,7 +19,7 @@ export default async function AdminPricingPage() {
   const { data: plans, error } = await admin
     .from("pricing_plans")
     .select(
-      "id, name, is_default_free, active, monthly_price_cents, display_order, pricing_plan_features(id, included, limit_value, display_order, pricing_features(label))"
+      "id, name, is_default_free, active, monthly_price_cents, monthly_price_inr, display_order, pricing_plan_features(id, included, limit_value, display_order, pricing_features(label))"
     )
     .order("display_order", { ascending: true });
 
@@ -59,6 +59,7 @@ export default async function AdminPricingPage() {
                 name={p.name}
                 isFree={p.is_default_free}
                 priceDollars={Math.round(p.monthly_price_cents / 100)}
+                priceInr={p.monthly_price_inr ?? 0}
                 active={p.active}
                 features={features}
               />

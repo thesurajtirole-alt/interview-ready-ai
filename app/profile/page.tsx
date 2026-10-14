@@ -7,6 +7,7 @@ import { CareerPreferencesForm } from "./career-preferences-form";
 import { SkillsEditor } from "./skills-editor";
 import { ResumeVault } from "./resume-vault";
 import { ProfileCompletion } from "./profile-completion";
+import { PlanCard } from "./plan-card";
 
 export default async function ProfilePage() {
   const supabase = createClient();
@@ -105,6 +106,8 @@ export default async function ProfilePage() {
             }}
           />
         </div>
+
+        <PlanCard userId={user.id} />
 
         {/* ---------- Candidate Profile (editable) ---------- */}
         <section className="mt-10">

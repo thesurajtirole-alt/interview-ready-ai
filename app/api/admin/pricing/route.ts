@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const schema = z.object({
   planId: z.string().uuid(),
   priceDollars: z.number().int().min(0).max(10000),
+  priceInr: z.number().int().min(0).max(1000000),
   active: z.boolean(),
   features: z
     .array(
@@ -30,13 +31,17 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
-  const { planId, priceDollars, active, features } = parsed.data;
+  const { planId, priceDollars, priceInr, active, features } = parsed.data;
 
   const admin = createAdminClient();
 
   const { error: planError } = await admin
     .from("pricing_plans")
-    .update({ monthly_price_cents: priceDollars * 100, active })
+    .update({
+      monthly_price_cents: priceDollars * 100,
+      monthly_price_inr: priceInr,
+      active,
+    })
     .eq("id", planId);
   if (planError) {
     return NextResponse.json({ error: planError.message }, { status: 500 });

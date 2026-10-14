@@ -15,7 +15,7 @@ export async function Header() {
         </a>
 
         {user ? (
-          <nav className="flex items-center gap-5 text-sm">
+          <nav className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-sm">
             <a href="/dashboard" className="text-muted-foreground hover:text-foreground">
               Dashboard
             </a>
@@ -27,6 +27,9 @@ export async function Header() {
             </a>
             <a href="/profile" className="text-muted-foreground hover:text-foreground">
               Profile
+            </a>
+            <a href="/pricing" className="text-muted-foreground hover:text-foreground">
+              Pricing
             </a>
             <a href="/settings" className="text-muted-foreground hover:text-foreground">
               Settings
