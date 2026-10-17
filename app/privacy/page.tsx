@@ -39,6 +39,10 @@ export default function PrivacyPage() {
                 Real-interview feedback and outcomes you choose to record.
               </li>
               <li>Profile, career preferences and skills you enter.</li>
+              <li>
+                Feedback messages you choose to send us (deleted with your
+                account).
+              </li>
             </ul>
           </section>
 

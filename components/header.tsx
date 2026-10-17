@@ -31,6 +31,9 @@ export async function Header() {
             <a href="/pricing" className="text-muted-foreground hover:text-foreground">
               Pricing
             </a>
+            <a href="/give-feedback" className="text-muted-foreground hover:text-foreground">
+              Feedback
+            </a>
             <a href="/settings" className="text-muted-foreground hover:text-foreground">
               Settings
             </a>

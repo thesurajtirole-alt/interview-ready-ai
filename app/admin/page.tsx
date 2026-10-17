@@ -66,6 +66,12 @@ export default async function AdminPage() {
         .eq("period_start", periodStart),
     ]);
 
+  const feedbackRes = await admin
+    .from("feedback")
+    .select("id, user_id, rating, message, created_at")
+    .order("created_at", { ascending: false })
+    .limit(30);
+
   const errors: string[] = [];
   const named: [string, { error: { message: string } | null }][] = [
     ["users", usersRes as any],
@@ -75,6 +81,7 @@ export default async function AdminPage() {
     ["outcomes", outcomesRes as any],
     ["resumes", resumesRes as any],
     ["usage", usageRes as any],
+    ["feedback (run feedback.sql if missing)", feedbackRes as any],
   ];
   for (const [name, r] of named) {
     if (r.error) errors.push(`${name}: ${r.error.message}`);
@@ -88,6 +95,9 @@ export default async function AdminPage() {
   const newThisWeek = users.filter(
     (u) => new Date(u.created_at).getTime() > weekAgo
   ).length;
+
+  const emailById = new Map(users.map((u) => [u.id, u.email ?? "—"]));
+  const feedback = feedbackRes.data ?? [];
 
   const targetCounts = countBy(targetsRes.data as any);
   const interviewCounts = countBy(interviewsRes.data as any);
@@ -195,6 +205,27 @@ export default async function AdminPage() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        <h2 className="mt-10 text-lg font-medium">
+          Feedback{" "}
+          <span className="text-sm font-normal text-muted-foreground">
+            (latest 30)
+          </span>
+        </h2>
+        <div className="mt-3 space-y-3">
+          {feedback.length === 0 && (
+            <p className="text-sm text-muted-foreground">No feedback yet.</p>
+          )}
+          {feedback.map((f: any) => (
+            <div key={f.id} className="rounded-lg border border-border p-4">
+              <p className="text-xs text-muted-foreground">
+                {emailById.get(f.user_id) ?? "—"} · {fmtDate(f.created_at)}
+                {f.rating ? ` · ${f.rating}/5` : ""}
+              </p>
+              <p className="mt-2 whitespace-pre-wrap text-sm">{f.message}</p>
+            </div>
+          ))}
         </div>
       </main>
     </>
