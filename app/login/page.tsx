@@ -50,6 +50,7 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
+              autoComplete="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -63,11 +64,21 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
+              autoComplete="current-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1.5 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring"
             />
+          </div>
+
+          <div className="text-right">
+            <a
+              href="/forgot-password"
+              className="text-xs text-muted-foreground underline"
+            >
+              Forgot password?
+            </a>
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

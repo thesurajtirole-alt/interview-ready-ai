@@ -48,12 +48,18 @@ export default function DemoPage() {
                 leadership. Publicly listed expertise: distributed
                 systems, AWS, team scaling.
               </p>
+              <p className="mt-1 text-xs font-medium text-accent">
+                Confirmed — from his public profile
+              </p>
             </div>
             <div>
               <p className="font-medium">Maya Rao</p>
               <p className="text-xs text-muted-foreground">
                 Senior Engineering Lead — publicly listed expertise:
                 system design, observability tooling, Kubernetes.
+              </p>
+              <p className="mt-1 text-xs font-medium text-accent">
+                Strong indication — based on her public talks
               </p>
             </div>
           </div>
@@ -110,13 +116,14 @@ export default function DemoPage() {
 
         <section className="rounded-xl border border-border p-5 text-center">
           <p className="text-xs font-medium text-muted-foreground">
-            Readiness
+            Readiness guide
           </p>
           <p className="mt-1 font-display text-3xl font-medium text-primary">
             78 <span className="text-base text-muted-foreground">/ 100</span>
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            You&apos;re looking ready. One area of minor polish left.
+            A rough guide based on evidence from your answers — not a pass or
+            fail. One area of minor polish left.
           </p>
         </section>
       </div>

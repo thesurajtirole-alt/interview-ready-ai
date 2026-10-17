@@ -38,19 +38,19 @@ export default function Home() {
   const faqs = [
     {
       q: "Is this going to judge me?",
-      a: "No. There's no pass/fail language anywhere in this product. You'll get evidence-based observations — what happened and why it matters — never a grade on who you are.",
+      a: "No. There's no pass/fail language anywhere in this product. You'll get evidence-based observations — what happened and why it matters — never a grade on who you are. The readiness number is only a rough guide to where you stand.",
     },
     {
       q: "What does the research actually look at?",
-      a: "Only publicly available professional information: things like a company's own site, public LinkedIn pages, and public talks or articles. We never look for private, personal, or contact information.",
+      a: "Only publicly available professional information: things like a company's own site, public professional profiles, and public talks or articles. We never look for private, personal, or contact information.",
     },
     {
       q: "Do you record my interview?",
-      a: "Recording is optional. If you allow it, it's stored privately and you can delete it — along with any interview, resume, or research data — at any time.",
+      a: "No. Your camera feed stays in your browser and is never recorded or uploaded. Your answers are turned into text so you can review them afterwards.",
     },
     {
       q: "Is my data used to train AI models?",
-      a: "No. Your resume, interviews, and recordings are yours. They aren't used for model training.",
+      a: "We don't train models on your data ourselves. To generate questions and feedback, your text is sent to Google's Gemini API, and on Google's free tier submitted content may be used by Google to improve its products. Please don't include anything you wouldn't want processed this way. Details are on our Privacy page.",
     },
   ];
 
@@ -263,9 +263,11 @@ export default function Home() {
             Your interview data is private
           </h3>
           <p className="mt-4 text-muted-foreground">
-            You can delete your resume, any interview, any recording, any
-            research data, or your account entirely, at any time. Nothing
-            you share here is used to train AI models.
+            You can remove an interview target, or delete your account and
+            everything in it, at any time from Settings. We don&apos;t train
+            AI models on your data ourselves — see our{" "}
+            <a href="/privacy" className="underline">Privacy page</a> for how
+            our AI provider handles it.
           </p>
         </div>
       </Section>
