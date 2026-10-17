@@ -66,6 +66,7 @@ export default function SignupPage() {
             <input
               id="email"
               type="email"
+              autoComplete="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -79,6 +80,7 @@ export default function SignupPage() {
             <input
               id="password"
               type="password"
+              autoComplete="new-password"
               required
               minLength={8}
               value={password}
@@ -90,6 +92,7 @@ export default function SignupPage() {
           <label className="flex items-start gap-2 text-xs text-muted-foreground">
             <input
               type="checkbox"
+              required
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
               className="mt-0.5"

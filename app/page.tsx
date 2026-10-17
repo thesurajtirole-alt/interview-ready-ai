@@ -281,8 +281,10 @@ export default function Home() {
               <div key={item.q} className="py-5">
                 <button
                   onClick={() => setFaqOpen(faqOpen === i ? null : i)}
-                  className="flex w-full items-center justify-between text-left"
+                  id={`faq-btn-${i}`}
+                  className="flex w-full items-center justify-between py-1 text-left"
                   aria-expanded={faqOpen === i}
+                  aria-controls={`faq-panel-${i}`}
                 >
                   <span className="font-medium">{item.q}</span>
                   <span className="ml-4 text-muted-foreground">
@@ -290,7 +292,12 @@ export default function Home() {
                   </span>
                 </button>
                 {faqOpen === i && (
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  <p
+                    id={`faq-panel-${i}`}
+                    role="region"
+                    aria-labelledby={`faq-btn-${i}`}
+                    className="mt-3 text-sm leading-relaxed text-muted-foreground"
+                  >
                     {item.a}
                   </p>
                 )}
