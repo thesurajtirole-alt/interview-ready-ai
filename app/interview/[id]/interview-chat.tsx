@@ -532,6 +532,13 @@ export function InterviewChat({
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
+      {!speechSupported && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          Voice answers aren&apos;t supported in this browser, so please type
+          your answers below. For voice, use Chrome or Edge on a laptop.
+        </p>
+      )}
+
       <div className="mt-4 flex items-end gap-2 border-t border-border pt-4">
         <textarea
           value={answer}
@@ -543,7 +550,11 @@ export function InterviewChat({
             }
           }}
           rows={2}
-          placeholder="Type your answer, or use the mic…"
+          placeholder={
+            speechSupported
+              ? "Type your answer, or use the mic…"
+              : "Type your answer…"
+          }
           className="flex-1 resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
         />
         {speechSupported && (
