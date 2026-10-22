@@ -342,6 +342,12 @@ export default function Home() {
             <a href="/terms" className="hover:text-foreground">
               Terms
             </a>
+            <a href="/refund-policy" className="hover:text-foreground">
+              Refunds
+            </a>
+            <a href="/contact" className="hover:text-foreground">
+              Contact
+            </a>
             <a href="/login" className="hover:text-foreground">
               Log in
             </a>
