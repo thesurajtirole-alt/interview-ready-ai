@@ -12,6 +12,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://truepanel.vercel.app"),
   title: "Truepanel — Your interview isn't a test. It's a skill you can train.",
   description:
     "An AI interview coach that researches your company, role, and panel, runs a realistic mock interview, and builds a personalized training plan — with no shame, no judgment, just improvement.",
@@ -30,6 +31,13 @@ export const metadata: Metadata = {
     description:
       "An AI interview coach that researches your company, role, and panel, runs a realistic mock interview, and builds a personalized training plan.",
     type: "website",
+    siteName: "Truepanel",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Truepanel — Your interview isn't a test. It's a skill you can train.",
+    description:
+      "An AI interview coach that researches your company, role, and panel, runs a realistic mock interview, and builds a personalized training plan.",
   },
 };
 
