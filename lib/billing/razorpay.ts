@@ -6,6 +6,11 @@ export function paymentsEnabled(): boolean {
   return !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 }
 
+/** True while using Razorpay test keys (no real money moves). */
+export function paymentsTestMode(): boolean {
+  return (process.env.RAZORPAY_KEY_ID ?? "").startsWith("rzp_test_");
+}
+
 function creds() {
   const id = process.env.RAZORPAY_KEY_ID;
   const secret = process.env.RAZORPAY_KEY_SECRET;

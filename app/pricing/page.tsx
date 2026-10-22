@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Header } from "@/components/header";
 import { PricingGrid, type GridPlan } from "./pricing-grid";
+import { paymentsEnabled, paymentsTestMode } from "@/lib/billing/razorpay";
 
 export const metadata = {
   title: "Pricing — Truepanel",
@@ -23,18 +24,23 @@ export default async function PricingPage() {
     .order("display_order", { ascending: true });
 
   let currentPlanId: string | null = null;
+  let hasPaidSub = false;
   if (user) {
     const { data: sub } = await supabase
       .from("user_subscriptions")
-      .select("plan_id")
+      .select("plan_id, razorpay_subscription_id")
       .eq("user_id", user.id)
       .maybeSingle();
     currentPlanId = sub?.plan_id ?? null;
+    hasPaidSub = !!sub?.razorpay_subscription_id;
   }
+  const paymentsLive = paymentsEnabled();
+  const testMode = paymentsTestMode();
 
   const gridPlans: GridPlan[] = (plans ?? []).map((p: any) => ({
     id: p.id,
     name: p.name,
+    slug: p.slug,
     badge: p.badge ?? null,
     highlighted: !!p.highlighted,
     isFree: !!p.is_default_free,
@@ -68,11 +74,15 @@ export default async function PricingPage() {
           plans={gridPlans}
           currentPlanId={currentPlanId}
           loggedIn={!!user}
+          paymentsLive={paymentsLive}
+          testMode={testMode}
+          hasPaidSub={hasPaidSub}
         />
 
         <p className="mt-10 text-center text-xs text-muted-foreground">
-          Paid plans aren&apos;t live yet — they&apos;re coming in an upcoming
-          update. Prices shown are planned and may change before launch.
+          {paymentsLive
+            ? "Paid plans renew monthly and are billed in Indian rupees (₹). Cancel any time from your profile — you keep access until the end of the period you paid for. See our refund policy for details."
+            : "Paid plans aren't live yet — they're coming in an upcoming update. Prices shown are planned and may change before launch."}
         </p>
       </main>
     </>

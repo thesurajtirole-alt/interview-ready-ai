@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export type GridFeature = {
   label: string;
@@ -11,6 +12,7 @@ export type GridFeature = {
 export type GridPlan = {
   id: string;
   name: string;
+  slug: string;
   badge: string | null;
   highlighted: boolean;
   isFree: boolean;
@@ -22,16 +24,99 @@ export type GridPlan = {
 
 type Currency = "INR" | "USD";
 
+function loadCheckout(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if ((window as any).Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+}
+
 export function PricingGrid({
   plans,
   currentPlanId,
   loggedIn,
+  paymentsLive,
+  testMode,
+  hasPaidSub,
 }: {
   plans: GridPlan[];
   currentPlanId: string | null;
   loggedIn: boolean;
+  paymentsLive: boolean;
+  testMode: boolean;
+  hasPaidSub: boolean;
 }) {
+  const router = useRouter();
   const [currency, setCurrency] = useState<Currency>("USD");
+  const [busySlug, setBusySlug] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function subscribe(plan: GridPlan) {
+    setMessage(null);
+    setBusySlug(plan.slug);
+    try {
+      const ok = await loadCheckout();
+      if (!ok) {
+        setMessage("Could not load the payment window. Check your connection and try again.");
+        setBusySlug(null);
+        return;
+      }
+      const res = await fetch("/api/billing/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planSlug: plan.slug }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage(data.error ?? "Could not start checkout.");
+        setBusySlug(null);
+        return;
+      }
+      const rz = new (window as any).Razorpay({
+        key: data.keyId,
+        subscription_id: data.subscriptionId,
+        name: "Truepanel",
+        description: `${data.planName} plan — monthly`,
+        prefill: { email: data.email },
+        theme: { color: "#2f5d4c" },
+        modal: { ondismiss: () => setBusySlug(null) },
+        handler: async (r: any) => {
+          try {
+            const v = await fetch("/api/billing/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_payment_id: r.razorpay_payment_id,
+                razorpay_subscription_id: r.razorpay_subscription_id,
+                razorpay_signature: r.razorpay_signature,
+              }),
+            });
+            if (v.ok) {
+              window.location.href = "/profile";
+              return;
+            }
+            setMessage(
+              "Your payment went through, but we couldn't confirm it instantly. Your plan should activate within a few minutes — if not, contact us and we'll sort it out."
+            );
+          } catch {
+            setMessage(
+              "Your payment went through, but we couldn't confirm it instantly. Your plan should activate within a few minutes — if not, contact us."
+            );
+          }
+          setBusySlug(null);
+          router.refresh();
+        },
+      });
+      rz.open();
+    } catch {
+      setMessage("Something went wrong. Please try again.");
+      setBusySlug(null);
+    }
+  }
 
   // Start in rupees for visitors in India, dollars for everyone else.
   useEffect(() => {
@@ -74,6 +159,16 @@ export function PricingGrid({
           ))}
         </div>
       </div>
+
+      {paymentsLive && testMode && (
+        <p className="mt-6 rounded-lg border border-border bg-secondary/60 px-4 py-3 text-center text-xs text-muted-foreground">
+          Payments are in <strong>test mode</strong> — no real money is charged.
+          Use Razorpay&apos;s test card or UPI details in the payment window.
+        </p>
+      )}
+      {message && (
+        <p className="mt-4 text-center text-sm text-red-600">{message}</p>
+      )}
 
       <div className="mt-8 grid gap-6 md:grid-cols-3">
         {plans.map((plan) => {
@@ -145,10 +240,39 @@ export function PricingGrid({
                     {loggedIn ? "Go to dashboard" : plan.ctaText ?? "Get started"}
                   </a>
                 )
-              ) : (
+              ) : !paymentsLive || plan.inr <= 0 ? (
                 <span className="mt-6 block rounded-lg border border-border px-5 py-2.5 text-center text-sm font-medium text-muted-foreground">
                   Coming soon
                 </span>
+              ) : !loggedIn ? (
+                <a
+                  href="/signup"
+                  className="mt-6 block rounded-lg bg-primary px-5 py-2.5 text-center text-sm font-medium text-primary-foreground transition hover:opacity-90"
+                >
+                  Sign up to subscribe
+                </a>
+              ) : isCurrent ? (
+                <a
+                  href="/profile"
+                  className="mt-6 block rounded-lg border border-border px-5 py-2.5 text-center text-sm font-medium transition hover:bg-secondary"
+                >
+                  Your current plan
+                </a>
+              ) : hasPaidSub ? (
+                <span className="mt-6 block rounded-lg border border-border px-5 py-2.5 text-center text-xs font-medium text-muted-foreground">
+                  Cancel your current plan first (Profile)
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => subscribe(plan)}
+                  disabled={busySlug !== null}
+                  className="mt-6 block w-full rounded-lg bg-primary px-5 py-2.5 text-center text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+                >
+                  {busySlug === plan.slug
+                    ? "Opening payment…"
+                    : `Subscribe — ₹${plan.inr.toLocaleString("en-IN")}/mo`}
+                </button>
               )}
             </div>
           );

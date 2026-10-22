@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { paymentsEnabled } from "@/lib/billing/razorpay";
+import { CancelPlanButton } from "./cancel-plan-button";
 
 const METRICS: { key: string; label: string }[] = [
   { key: "full_interview", label: "Full mock interviews" },
@@ -18,7 +20,7 @@ export async function PlanCard({ userId }: { userId: string }) {
 
   const { data: sub } = await supabase
     .from("user_subscriptions")
-    .select("plan_id")
+    .select("plan_id, razorpay_subscription_id, cancel_at_period_end, current_period_end")
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -44,6 +46,15 @@ export async function PlanCard({ userId }: { userId: string }) {
   ]);
 
   const planName = (planRes.data as any)?.name ?? "Free";
+  const isPaid = !!sub?.razorpay_subscription_id;
+  const periodEnd = sub?.current_period_end
+    ? new Date(sub.current_period_end).toLocaleDateString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : null;
 
   const limits = new Map<string, number | null>();
   for (const r of (limitsRes.data ?? []) as any[]) {
@@ -59,6 +70,16 @@ export async function PlanCard({ userId }: { userId: string }) {
         <div>
           <p className="text-xs font-medium text-muted-foreground">Your plan</p>
           <p className="font-display text-xl font-medium">{planName}</p>
+          {isPaid && sub?.cancel_at_period_end && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Cancelled — you keep access{periodEnd ? ` until ${periodEnd}` : " until the end of this period"}.
+            </p>
+          )}
+          {isPaid && !sub?.cancel_at_period_end && periodEnd && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Renews on {periodEnd}.
+            </p>
+          )}
         </div>
         <a
           href="/pricing"
@@ -67,6 +88,11 @@ export async function PlanCard({ userId }: { userId: string }) {
           See all plans
         </a>
       </div>
+      {isPaid && !sub?.cancel_at_period_end && (
+        <div className="mt-3">
+          <CancelPlanButton />
+        </div>
+      )}
 
       <p className="mt-4 text-xs font-medium text-muted-foreground">
         Used this month
@@ -91,8 +117,8 @@ export async function PlanCard({ userId }: { userId: string }) {
         })}
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
-        Limits reset on the 1st of each month. Paid plans are coming in an
-        upcoming update.
+        Limits reset on the 1st of each month.
+        {paymentsEnabled() ? "" : " Paid plans are coming in an upcoming update."}
       </p>
     </section>
   );
